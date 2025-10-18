@@ -2,12 +2,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from pyglet.gui import PushButton as _PushButton
-from ..customtypes import *
+from ..types import *
 if TYPE_CHECKING:
 	from pyglet.customtypes import AnchorX, AnchorY
 	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
-	from pyglet.image import TextureRegion
 	from ..sprite import SpriteSheet
 
 
