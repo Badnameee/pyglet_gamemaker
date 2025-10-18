@@ -2,9 +2,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from pyglet.gui import PushButton as _PushButton
+from pyglet.text import Label
 from ..types import *
 if TYPE_CHECKING:
-	from pyglet.customtypes import AnchorX, AnchorY
+	from pyglet.customtypes import AnchorX, AnchorY, HorizontalAlign
+	from pyglet.graphics.shader import ShaderProgram
 	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
 	from ..sprite import SpriteSheet
@@ -63,11 +65,9 @@ class Button(_PushButton):
 		y -= self.anchor_pos[1]
 
 		super().__init__(x, y, self.pressed_img, self.unpressed_img, self.hover_img, batch, group) # type: ignore[arg-type]
-		self.window = window
 
-		# ID for event dispatch recievers to identify button
 		self.ID = ID
-
+		self.window = window
 		self.status = 'Unpressed'
 		
 		# Adds event handler for mouse events
@@ -120,3 +120,91 @@ class Button(_PushButton):
 	def pos(self, val: Point2D) -> None:
 		self.x = val[0] - self.anchor_pos[0] # type: ignore[assignment]
 		self.y = val[1] - self.anchor_pos[1] # type: ignore[assignment]
+
+
+class Text(Label):
+	"""A label with extra functions, mainly offsetting for scrolling."""
+
+	_text = ''
+
+	def __init__(self,
+			text: str = '',
+			x: float = 0, y: float = 0,
+			width: int | None = None, height: int | None = None,
+			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'), rotation: float = 0.0,
+			multiline: bool = False, dpi: int | None = None,
+			font_info: FontInfo = (None, None),
+			weight: str = "normal", italic: bool | str = False, stretch: bool | str=False,
+			color: Color = Color.WHITE,
+			align: HorizontalAlign = "left",
+			batch: Batch | None = None, group: Group | None = None, program: ShaderProgram | None = None
+	) -> None:
+		super().__init__(
+			text, x, y, 0,
+			width, height, *anchor, rotation,
+			multiline, dpi,
+			*font_info,
+			weight, italic, stretch,
+			color.value,
+			align, # type: ignore[arg-type]
+			batch, group, program
+		)
+
+		self.start_pos = x, y
+		self.font_info = font_info
+		self.text = text
+
+	@classmethod
+	def from_scale[T: Text](cls: type[T],
+			scale: tuple[float, float],
+			window: Window,
+			text: str = '',
+			width: int | None = None, height: int | None = None,
+			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'), rotation: float = 0.0,
+			multiline: bool = False, dpi: int | None = None,
+			font_info: FontInfo = (None, None),
+			weight: str = "normal", italic: bool | str = False, stretch: bool | str=False,
+			color: Color = Color.WHITE,
+			align: HorizontalAlign = "left",
+			batch: Batch | None = None, group: Group | None = None, program: ShaderProgram | None = None
+	) -> T:
+		return cls(
+			text, scale[0] * window.width, scale[1] * window.height,
+			width, height, anchor, rotation,
+			multiline, dpi,
+			font_info,
+			weight, italic, stretch,
+			color,
+			align, # type: ignore[arg-type]
+			batch, group, program
+		)
+
+	def offset(self, val: Point2D) -> None:
+		"""Add from current offset of the text by an amount."""
+		self.x += val[0]
+		self.y += val[1]
+
+	def set_offset(self, val: Point2D) -> None:
+		"""Set offset of the text to an amount."""
+		self.x, self.y = self.start_pos[0] + val[0], self.start_pos[1] + val[1]
+
+	def reset(self) -> None:
+		"""Reset text to creation state"""
+		self.x, self.y = self.start_pos
+		self.font_name, self.font_size = self.font_info # type: ignore[assignment]
+
+	@property
+	def text(self) -> str:
+		"""The text string"""
+		return self._text
+	@text.setter
+	def text(self, txt: str | int) -> None:
+		self.document.text = self._text = str(txt)
+
+	@property
+	def pos(self) -> Point2D:
+		"""The position, anchored"""
+		return self.position[0], self.position[1]
+	@pos.setter
+	def pos(self, val: Point2D) -> None:
+		self.position = *val, self.position[2]
