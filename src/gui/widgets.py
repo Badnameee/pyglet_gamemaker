@@ -29,15 +29,29 @@ class Button(_PushButton):
 	}
 	
 	def __init__(self,
-			name: str,
+			ID: str,
 			x: float, y: float, anchor: tuple[AnchorX, AnchorY],
-			image_sheet: SpriteSheet,
+			image_sheet: SpriteSheet, image_start: str | int,
 			window: Window, batch: Batch, group: Group,
 			**kwargs
 	) -> None:
+		"""Create a button.
+
+		Args:
+			ID (str): Name/ID of widget
+			x (float): Anchored x position of button
+			y (float): Anchored y position of button
+			anchor (tuple[AnchorX, AnchorY]): Anchor for both axes
+			image_sheet (SpriteSheet): SpriteSheet with the button images
+			image_start (str | int): The starting index of the button images
+			window (Window): Window for attaching self
+			batch (Batch): Batch for rendering
+			group (Group): Gorup for rendering
+		"""
 		
 		# Extract images from sheet
-		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[:3] # type: ignore[misc]
+		start = image_sheet.lookup[image_start] if isinstance(image_start, str) else image_start
+		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[start:start + 3] # type: ignore[misc]
 		
 		# Calculate anchor
 		self.anchor = anchor
@@ -52,8 +66,8 @@ class Button(_PushButton):
 		super().__init__(x, y, self.pressed_img, self.unpressed_img, self.hover_img, batch, group) # type: ignore[arg-type]
 		self.window = window
 
-		# Name for event dispatch recievers to identify button
-		self.name = name
+		# ID for event dispatch recievers to identify button
+		self.ID = ID
 
 		self.status = 'Unpressed'
 		
@@ -101,7 +115,7 @@ class Button(_PushButton):
 
 	@property
 	def pos(self) -> Point2D:
-		"""The anchored position of the button"""
+		"""The anchored position of the button."""
 		return self.x + self.anchor_pos[0], self.y + self.anchor_pos[1]
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
