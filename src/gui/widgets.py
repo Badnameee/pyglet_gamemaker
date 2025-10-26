@@ -156,6 +156,29 @@ class Text(Label):
 			align: HorizontalAlign = "left",
 			batch: Batch | None = None, group: Group | None = None, program: ShaderProgram | None = None
 	) -> None:
+		"""Create a text label
+
+		Args:
+			text (str, optional): Label text. Defaults to ''.
+			x (float, optional): Anchored x position. Defaults to 0.
+			y (float, optional): Anchored y position. Defaults to 0.
+			width (int | None, optional): Width of label. Defaults to None.
+			height (int | None, optional): Height of label. Defaults to None.
+			anchor (tuple[AnchorX, AnchorY], optional): Anchor for both axes. Defaults to ('center', 'baseline').
+			rotation (float, optional): Rotation of text. Defaults to 0.0.
+			multiline (bool, optional): Whether text is multiline. Defaults to False.
+			dpi (int | None, optional): DPI of text. Defaults to None.
+			font_info (FontInfo, optional): Font name and size. Defaults to (None, None).
+			weight (str, optional): Weight of text. Defaults to "normal".
+			italic (bool | str, optional): Whether to italicize text. Defaults to False.
+			stretch (bool | str, optional): Whether to stretch text.. Defaults to False.
+			color (Color, optional): Color of text. Defaults to Color.WHITE.
+			align (HorizontalAlign, optional): x alignment of text. Defaults to "left".
+			batch (Batch | None, optional): Batch for rendering. Defaults to None.
+			group (Group | None, optional): Group for rendering. Defaults to None.
+			program (ShaderProgram | None, optional): Shader for rendering. Defaults to None.
+		"""
+
 		super().__init__(
 			text, x, y, 0,
 			width, height, *anchor, rotation,
@@ -185,6 +208,31 @@ class Text(Label):
 			align: HorizontalAlign = "left",
 			batch: Batch | None = None, group: Group | None = None, program: ShaderProgram | None = None
 	) -> T:
+		"""Create a button with text
+
+		Args:
+			scale (tuple[float, float]): The (x, y) scale for label
+			window (Window): Window for scaling
+			text (str, optional): Label text. Defaults to ''.
+			x (float, optional): Anchored x position. Defaults to 0.
+			y (float, optional): Anchored y position. Defaults to 0.
+			width (int | None, optional): Width of label. Defaults to None.
+			height (int | None, optional): Height of label. Defaults to None.
+			anchor (tuple[AnchorX, AnchorY], optional): Anchor for both axes. Defaults to ('center', 'baseline').
+			rotation (float, optional): Rotation of text. Defaults to 0.0.
+			multiline (bool, optional): Whether text is multiline. Defaults to False.
+			dpi (int | None, optional): DPI of text. Defaults to None.
+			font_info (FontInfo, optional): Font name and size. Defaults to (None, None).
+			weight (str, optional): Weight of text. Defaults to "normal".
+			italic (bool | str, optional): Whether to italicize text. Defaults to False.
+			stretch (bool | str, optional): Whether to stretch text.. Defaults to False.
+			color (Color, optional): Color of text. Defaults to Color.WHITE.
+			align (HorizontalAlign, optional): x alignment of text. Defaults to "left".
+			batch (Batch | None, optional): Batch for rendering. Defaults to None.
+			group (Group | None, optional): Group for rendering. Defaults to None.
+			program (ShaderProgram | None, optional): Shader for rendering. Defaults to None.
+			hover_enlarge (int, optional): How much to enlarge text when hovered over. Defaults to 0.
+		"""
 		return cls(
 			text, scale[0] * window.width, scale[1] * window.height,
 			width, height, anchor, rotation,
@@ -251,6 +299,33 @@ class TextButton(Button):
 
 			hover_enlarge: int = 0, **kwargs
 	) -> None:
+		"""Create a button with text
+
+		Args:
+			ID (str): Name/ID of widget
+			image_sheet (SpriteSheet): SpriteSheet with the button images
+			image_start (str | int): The starting index of the button images
+			window (Window): Window for attaching self
+			text (str, optional): Label text. Defaults to ''.
+			x (float, optional): Anchored x position of button. Defaults to 0.
+			y (float, optional): Anchored y position of button. Defaults to 0.
+			width (int | None, optional): Width of label. Defaults to None.
+			height (int | None, optional): Height of label. Defaults to None.
+			anchor (tuple[AnchorX, AnchorY], optional): Anchor for both axes. Defaults to ('center', 'baseline').
+			rotation (float, optional): Rotation of text. Defaults to 0.0.
+			multiline (bool, optional): Whether text is multiline. Defaults to False.
+			dpi (int | None, optional): DPI of text. Defaults to None.
+			font_info (FontInfo, optional): Font name and size. Defaults to (None, None).
+			weight (str, optional): Weight of text. Defaults to "normal".
+			italic (bool | str, optional): Whether to italicize text. Defaults to False.
+			stretch (bool | str, optional): Whether to stretch text.. Defaults to False.
+			color (Color, optional): Color of text. Defaults to Color.WHITE.
+			align (HorizontalAlign, optional): x alignment of text. Defaults to "left".
+			batch (Batch | None, optional): Batch for rendering. Defaults to None.
+			group (Group | None, optional): Group for rendering. Defaults to None.
+			program (ShaderProgram | None, optional): Shader for rendering. Defaults to None.
+			hover_enlarge (int, optional): How much to enlarge text when hovered over. Defaults to 0.
+		"""
 		
 		super().__init__(ID, x, y, anchor, image_sheet, image_start, window, batch, group, **kwargs)
 		self.enlarged = False
@@ -270,6 +345,7 @@ class TextButton(Button):
 		)
 
 	def enlarge(self) -> None:
+		"""Enlarge the text based on button status."""
 
 		# Hovering
 		if self.status == 'Hover':
@@ -327,6 +403,7 @@ class TextButton(Button):
 
 	@property
 	def hover_enlarge(self) -> int:
+		"""How much to enlarge text when hovered over."""
 		return self._hover_enlarge
 	@hover_enlarge.setter
 	def hover_enlarge(self, size: int) -> None:
