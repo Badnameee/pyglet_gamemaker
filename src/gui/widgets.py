@@ -28,12 +28,14 @@ class Button(_PushButton):
 		'center': 0.5,
 		'right': 1, 'top': 1,
 	}
+
+	status: ButtonStatus
 	
 	def __init__(self,
 			ID: str,
 			x: float, y: float, anchor: tuple[AnchorX, AnchorY],
 			image_sheet: SpriteSheet, image_start: str | int,
-			window: Window, batch: Batch, group: Group,
+			window: Window, batch: Batch | None=None, group: Group | None=None,
 			**kwargs
 	) -> None:
 		"""Create a button.
@@ -112,14 +114,29 @@ class Button(_PushButton):
 	def disable(self) -> None:
 		self.enabled = False
 
+	@property # type: ignore[override]
+	def x(self) -> float:
+		"""Anchored x position"""
+		return self._x + self.anchor_pos[0]
+	@x.setter
+	def x(self, val: float) -> None:
+		_PushButton.x.fset(self, val - self.anchor_pos[0]) # type: ignore[attr-defined]
+
+	@property # type: ignore[override]
+	def y(self) -> float:
+		"""Anchored y position"""
+		return self._y + self.anchor_pos[1]
+	@y.setter
+	def y(self, val: float) -> None:
+		_PushButton.y.fset(self, val - self.anchor_pos[1]) # type: ignore[attr-defined]
+
 	@property
 	def pos(self) -> Point2D:
-		"""The anchored position of the button."""
-		return self.x + self.anchor_pos[0], self.y + self.anchor_pos[1]
+		"""Anchored xy position"""
+		return self.x, self.y
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.x = val[0] - self.anchor_pos[0] # type: ignore[assignment]
-		self.y = val[1] - self.anchor_pos[1] # type: ignore[assignment]
+		self.x, self.y = val
 
 
 class Text(Label):
@@ -208,3 +225,113 @@ class Text(Label):
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
 		self.position = *val, self.position[2]
+
+
+class TextButton(Button):
+
+	# Store as property to reset size when manually changing
+	_hover_enlarge = 0
+
+	def __init__(self,
+			ID: str,
+			image_sheet: SpriteSheet, image_start: str | int,
+			window: Window,
+
+			# Text params
+			text: str = '',
+			x: float = 0, y: float = 0,
+			width: int | None = None, height: int | None = None,
+			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'), rotation: float = 0.0,
+			multiline: bool = False, dpi: int | None = None,
+			font_info: FontInfo = (None, None),
+			weight: str = "normal", italic: bool | str = False, stretch: bool | str=False,
+			color: Color = Color.WHITE,
+			align: HorizontalAlign = "left",
+			batch: Batch | None = None, group: Group | None = None, program: ShaderProgram | None = None,
+
+			hover_enlarge: int = 0, **kwargs
+	) -> None:
+		
+		super().__init__(ID, x, y, anchor, image_sheet, image_start, window, batch, group, **kwargs)
+		self.enlarged = False
+		self.hover_enlarge = hover_enlarge
+
+		self.text_render = Text(
+			text,
+			x, y,
+			width, height,
+			anchor, rotation,
+			multiline, dpi,
+			font_info,
+			weight, italic, stretch,
+			color,
+			align,
+			batch, group, program
+		)
+
+	def enlarge(self) -> None:
+
+		# Hovering
+		if self.status == 'Hover':
+			# First frame hover: enlarge text
+			if not self.enlarged:
+				self.enlarged = True
+				self.text_render.font_size += self.hover_enlarge
+		else:
+			# First frame unhover: enlarge text
+			if self.enlarged:
+				self.enlarged = False
+				self.text_render.font_size -= self.hover_enlarge
+
+	def on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+		super().on_mouse_press(x, y, buttons, modifiers)
+		self.enlarge()
+
+	def on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
+		super().on_mouse_motion(x, y, dx, dy)
+		self.enlarge()
+
+	def on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+		super().on_mouse_release(x, y, buttons, modifiers)
+		self.enlarge()
+
+	def on_mouse_drag(self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int) -> None:
+		super().on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+		self.enlarge()
+
+	@property
+	def text(self) -> str:
+		"""The text string"""
+		return self.text_render.text
+	@text.setter
+	def text(self, txt: str | int) -> None:
+		self.text_render.text = txt
+
+	@property # type: ignore[override]
+	def x(self) -> float:
+		"""Anchored x position"""
+		return self._x + self.anchor_pos[0]
+	@x.setter
+	def x(self, val: float) -> None:
+		Button.x.fset(self, val) # type: ignore[attr-defined]
+		self.text_render.x = val 
+
+	@property # type: ignore[override]
+	def y(self) -> float:
+		return self._y + self.anchor_pos[1]
+	@y.setter
+	def y(self, val: float) -> None:
+		"""Anchored y position"""
+		Button.y.fset(self, val) # type: ignore[attr-defined]
+		self.text_render.y = val
+
+	@property
+	def hover_enlarge(self) -> int:
+		return self._hover_enlarge
+	@hover_enlarge.setter
+	def hover_enlarge(self, size: int) -> None:
+		# If need to be resized
+		if self.enlarged:
+			# Resize to new enlarge
+			self.text_render.font_size -= self.hover_enlarge - size
+		self._hover_enlarge = size
