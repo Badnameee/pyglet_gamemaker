@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from pyglet.gui import PushButton as _PushButton
 from pyglet.text import Label
@@ -23,7 +23,7 @@ class Button(_PushButton):
 	"""
 
 	# Converts anchor type to multiplier
-	ANCHOR_TYPE_TO_FACTOR: dict[AnchorX | AnchorY, float] = {
+	ANCHOR_TYPE_TO_FACTOR: ClassVar[dict[AnchorX | AnchorY, float]] = {
 		'left': 0, 'bottom': 0,
 		'center': 0.5,
 		'right': 1, 'top': 1,
