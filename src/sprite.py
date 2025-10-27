@@ -1,10 +1,7 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 import pyglet
 from pyglet.image import TextureRegion, ImageGrid, TextureGrid, AbstractImage
-if TYPE_CHECKING:
-	...
 
 class SpriteSheet:
 	"""An object holding a rectangular sheet of common sprites.
