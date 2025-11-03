@@ -8,9 +8,12 @@ from pyglet.event import EventDispatcher
 from pyglet.graphics import Batch
 
 class Scene(ABC, EventDispatcher):
-	"""Holds a scene for the game.
+	"""Abstract class for a Scene in the game, inherit to create own scenes.
+	Window object should hold all scenes in window.scenes dictionary
 	
 	Dispatches `on_scene_change` (to window) when program wishes to switch scenes.
+
+	`enable` and `disable` run from Window when enabling and disabling scene.
 
 	Use kwargs to attach event handlers.
 	"""
@@ -23,6 +26,7 @@ class Scene(ABC, EventDispatcher):
 		Args:
 			name (str): The name of the scene (used to identity scene by name)
 			window (Window): The screen window (for pushing/popping handlers)
+			**kwargs: Event handlers to attach (name=func)
 		"""
 		self.name, self.window = name, window
 		
