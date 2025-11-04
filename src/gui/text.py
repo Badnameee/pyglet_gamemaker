@@ -1,13 +1,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from ..types import *
 from pyglet.text import Label
 if TYPE_CHECKING:
 	from pyglet.customtypes import AnchorX, AnchorY, HorizontalAlign
 	from pyglet.graphics.shader import ShaderProgram
 	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
-	from ..types import *
 
 
 class Text(Label):

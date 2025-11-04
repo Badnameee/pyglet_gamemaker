@@ -1,15 +1,15 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from ..types import *
 from .text import Text
+from .button import Button
 if TYPE_CHECKING:
 	from pyglet.customtypes import AnchorX, AnchorY, HorizontalAlign
 	from pyglet.graphics.shader import ShaderProgram
 	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
-	from .button import Button
 	from ..sprite import SpriteSheet
-	from ..types import *
 
 
 class TextButton(Button):
