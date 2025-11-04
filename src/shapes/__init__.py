@@ -1,1 +1,1 @@
-from hitbox import *
+from .hitbox import *

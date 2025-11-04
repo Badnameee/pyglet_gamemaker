@@ -1,14 +1,12 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 import math
 
 import pyglet
 from pyglet.math import Vec2
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Polygon, Circle
-
-if TYPE_CHECKING:
-	from ..types import *
+from ..types import *
 
 
 class Hitbox:
@@ -17,9 +15,9 @@ class Hitbox:
 	Can use `from_rect` to get coords for rectangle
 	"""
 
-	# !NOTE! The reason Hitbox.property is used very often is due to property overriding in subclasses
-
-	_start_coords: tuple[Point2D, ...] = tuple()
+	_global_anchor_pos: Point2D = 0, 0
+	_anchor_coords: tuple[Point2D, ...] = tuple()
+	_raw_coords: tuple[Point2D, ...] = tuple()
 	_anchor_pos: Point2D = 0, 0
 	_angle: float = 0
 
@@ -36,9 +34,16 @@ class Hitbox:
 			circle (bool, optional): Whether hitbox is a circle (for SAT). Defaults to False.
 			rect (bool, optional): Whether hitbox is a rectangle (for SAT). Defaults to False.
 		"""
-		self.coords: tuple[Point2D, ...] | list[Point2D] = coords
-		self._start_coords = coords
-		Hitbox.anchor_pos.fset(self, anchor_pos)# type: ignore[attr-defined]
+
+		if circle and rect:
+			raise ValueError(f'Hitbox cannot be both a circle and rectangle.')
+		if len(coords) <= 2:
+			raise ValueError(f'Hitbox needs at least 2 coordinates ({len(coords)} passed).')
+
+		self.coords: tuple[Point2D, ...] = coords
+		self._global_anchor_pos = coords[0]
+		self._raw_coords = coords
+		self.anchor_pos = anchor_pos
 
 		self._forced_axes: list[Vec2] = []
 		self.is_circle = circle
@@ -68,7 +73,7 @@ class Hitbox:
 
 		# Circle only has 1 axis, from forced
 		if self.is_circle:
-			return self.get_forced_axes()
+			return self._get_forced_axes()
 
 		axes = []
 
@@ -83,7 +88,7 @@ class Hitbox:
 			# Normalizing helps get MTV
 			axes.append(Vec2(-vec[1], vec[0]).normalize())
 
-		return axes + self.get_forced_axes()
+		return axes + self._get_forced_axes()
 	
 	def _get_forced_axes(self) -> list[Vec2]:
 		"""Gets the normalized (NOT NORMALS) forced axes (for SAT)
@@ -94,7 +99,7 @@ class Hitbox:
 		return list(map(lambda axis: axis.normalize(), self._forced_axes))
 	
 	def _project(self, axis: Vec2) -> tuple[float, float]:
-		"""Projects the hitbox onto an axis (use self.get_axes()) (for SAT)
+		"""Projects the hitbox onto an axis (use self._get_axes()) (for SAT)
 
 		Args:
 			axis (Vec2): The normal axis to project onto
@@ -308,35 +313,35 @@ class Hitbox:
 
 		# Get actual vertices
 		self.coords = []
-		for x, y in self.anchor_coords:
+		for x, y in self._anchor_coords:
 			new_x = x * math.cos(self.angle) - y * math.sin(self.angle)
 			new_y = x * math.sin(self.angle) + y * math.cos(self.angle)
-			self.coords.append((new_x + self.global_anchor_pos[0], new_y + self.global_anchor_pos[1]))
+			self.coords.append((new_x + self._raw_coords[0][0], new_y + self._raw_coords[0][1]))
 
 	def _calc_anchor_coords(self) -> None:
 		"""Updates anchor coordinates (when anchor position changes)"""
-		self.global_anchor_pos = self.start_coords[0][0] + self.anchor_x, self.start_coords[0][1] + self.anchor_y
-		self.anchor_coords = [(coord[0] - self.global_anchor_pos[0], coord[1] - self.global_anchor_pos[1]) for coord in self.start_coords]
+		bottomleft_anchor = -self.anchor_x, -self.anchor_y
+		self._anchor_coords = tuple(
+			(
+				bottomleft_anchor[0] + coord[0] - self._global_anchor_pos[0],
+				bottomleft_anchor[1] + coord[1] - self._global_anchor_pos[1],
+			)
+			for coord in self._raw_coords
+		)
 
-	def move_to(self, pos: Point2D) -> None:
+	def move_to(self, x: float, y: float) -> None:
 		"""Move the hitbox to a location based on anchor
 
 		Args:
 			pos (Point2D): The anchored position to move to
 		"""
-		# Calculate net translation
-		trans = pos[0] - (self.start_coords[0][0] + self.anchor_x), pos[1] - (self.start_coords[0][1] + self.anchor_y)
-		# Translate all coordinates
-		self.start_coords = tuple((coord[0] + trans[0], coord[1] + trans[1]) for coord in self.start_coords)
-		self.calc_coords()
-
-	@property
-	def start_coords(self) -> tuple[Point2D, ...]:
-		"""Starting coords before anchoring and angle"""
-		return self._start_coords
-	@start_coords.setter
-	def start_coords(self, val: tuple[Point2D, ...]) -> None:
-		self._start_coords = val
+		# Calculate translation using old and new pos
+		trans = x - self._global_anchor_pos[0], y - self._global_anchor_pos[1]
+		print(trans)
+		# Translate coords
+		self._raw_coords = tuple((coord[0] + trans[0], coord[1] + trans[1]) for coord in self._raw_coords)
+		
+		self._global_anchor_pos = x, y
 		self.calc_coords()
 
 	@property
@@ -345,8 +350,9 @@ class Hitbox:
 		return self._anchor_pos[0]
 	@anchor_x.setter
 	def anchor_x(self, val: float) -> None:
+		trans = self.anchor_x - val
 		self._anchor_pos = val, self.anchor_y
-		self.calc_coords()
+		self.move_to(self._global_anchor_pos[0] + trans, self._global_anchor_pos[1])
 
 	@property
 	def anchor_y(self) -> float:
@@ -354,8 +360,9 @@ class Hitbox:
 		return self._anchor_pos[1]
 	@anchor_y.setter
 	def anchor_y(self, val: float) -> None:
+		trans = self.anchor_y - val
 		self._anchor_pos = self.anchor_x, val
-		self.calc_coords()
+		self.move_to(self._global_anchor_pos[0], self._global_anchor_pos[1] + trans)
 
 	@property
 	def anchor_pos(self) -> Point2D:
@@ -363,8 +370,9 @@ class Hitbox:
 		return self._anchor_pos
 	@anchor_pos.setter
 	def anchor_pos(self, val: Point2D) -> None:
+		trans = self.anchor_x - val[0], self.anchor_y - val[1]
 		self._anchor_pos = val
-		self.calc_coords()
+		self.move_to(self._global_anchor_pos[0] + trans[0], self._global_anchor_pos[1] + trans[1])
 
 	@property
 	def angle(self) -> float:
@@ -376,7 +384,8 @@ class Hitbox:
 		self.calc_coords()
 
 
-class HitboxRender(Polygon, Hitbox):
+class HitboxRender(Hitbox):
+	"""Holds a Hitbox with a `render` object to render the hitbox"""
 
 	_hitbox_color = Color.BLACK
 	
@@ -386,18 +395,30 @@ class HitboxRender(Polygon, Hitbox):
 			anchor_pos: Point2D=(0, 0),
 			*, circle: bool=False, rect: bool=False
 	) -> None:
+		"""_summary_
+
+		Args:
+			coords (tuple[Point2D, ...]): The coordinates of the hitbox
+			color (Color): The color of the hitbox render
+			batch (Batch): The batch for rendering
+			group (Group): The group for rendering
+			anchor_pos (Point2D, optional): The starting anchor position. Defaults to (0, 0).
+			circle (bool, optional): Whether hitbox is a circle (for SAT). Defaults to False.
+			rect (bool, optional): Whether hitbox is a rectangle (for SAT). Defaults to False.
+		"""
+		self.render = Polygon(*coords, color=color.value, batch=batch, group=group)
+		super().__init__(coords, anchor_pos, circle=circle, rect=rect)
+
 		self._hitbox_color = color
-		super().__init__(*coords, color=color.value, batch=batch, group=group)
-		Hitbox.__init__(self, coords, anchor_pos, circle=circle, rect=rect)
 
 	def calc_coords(self):
 		super().calc_coords()
 
 		# Update polygon render
-		self._coordinates = self.coords
-		self._update_vertices()
-		Polygon.x.fset(self, self.coords[0][0]) # type: ignore[attr-defined]
-		Polygon.y.fset(self, self.coords[0][1]) # type: ignore[attr-defined]
+		self.render._coordinates = self._raw_coords
+		self.render._update_vertices()
+		self.render.x = self._raw_coords[0][0]
+		self.render.y = self._raw_coords[0][1]
 
 	@property
 	def hitbox_color(self) -> Color:
@@ -406,4 +427,4 @@ class HitboxRender(Polygon, Hitbox):
 	@hitbox_color.setter
 	def hitbox_color(self, val: Color) -> None:
 		self._hitbox_color = val
-		self.color = val.value
+		self.render.color = val.value
