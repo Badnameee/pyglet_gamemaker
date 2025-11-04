@@ -3,7 +3,8 @@ tests = [
 	'gui_button',
 	'gui_text',
 	'gui_text_button',
-	'sprite_spritesheet'
+	'sprite_spritesheet',
+	'shapes_hitbox',
 ]
 
 for test_num, test in enumerate(tests, 1):
