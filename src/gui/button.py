@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
+from ..types import *
 
 from pyglet.gui import PushButton as _PushButton
 if TYPE_CHECKING:
@@ -7,7 +8,6 @@ if TYPE_CHECKING:
 	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
 	from ..sprite import SpriteSheet
-	from ..types import *
 
 
 class Button(_PushButton):
