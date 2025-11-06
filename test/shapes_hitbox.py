@@ -11,8 +11,8 @@ window = Window(640, 480)
 batch = Batch()
 group = Group(0)
 
-hitbox = HitboxRender(HitboxRender.from_rect(100, 100, 100, 50), Color.WHITE, batch, group)
-hitbox2 = HitboxRender(HitboxRender.from_rect(300, 300, 100, 50), Color.RED, batch, group)
+hitbox = HitboxRender.from_rect(100, 100, 100, 50, Color.WHITE, batch, group)
+hitbox2 = HitboxRender.from_rect(300, 300, 100, 50, Color.RED, batch, group)
 
 @window.event
 def on_mouse_motion(x, y, dx, dy):

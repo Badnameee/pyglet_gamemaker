@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Literal
+from typing import TYPE_CHECKING, Literal, Self, NoReturn
 import math
 
 import pyglet
@@ -7,12 +7,14 @@ from pyglet.math import Vec2
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Polygon, Circle
 from ..types import *
+if TYPE_CHECKING:
+	from pyglet.customtypes import AnchorX, AnchorY
 
 
 class Hitbox:
 	"""Store a convex hitbox that uses SAT (Separating Axis Theorem) method for collision.
 
-	Can use `from_rect` to get coords for rectangle
+	Can use `from_rect` to get coords for rectangle or `from_circle` for a circle hitbox (coords are not accurate but optimized for collisions)
 	"""
 
 	_local_coords: tuple[Point2D, ...] = tuple()
@@ -66,20 +68,27 @@ class Hitbox:
 		self.is_circle = circle
 		self.is_rect = rect
 
-	@staticmethod
-	def from_rect(x: float, y: float, width: float, height: float) -> tuple[Point2D, Point2D, Point2D, Point2D]:
-		"""Create coords for rectangle hitbox. Not a classmethod due to inheritance issues.
+	@classmethod
+	def from_rect(cls, x: float, y: float, width: float, height: float, anchor_pos: tuple[AnchorX, AnchorY]) -> Self:
+		"""Create a hitbox from rectangle args.
 
 		Args:
 			x (float): x position
 			y (float): y position
 			width (float): Width of rect
 			height (float): Height of rect
-
-		Returns:
-			tuple[Point2D, Point2D, Point2D, Point2D]: The coords
+			anchor_pos (float): Anchor position
 		"""
-		return ((x, y), (x+width, y), (x+width, y+height), (x, y+height))
+		return cls((x, y), (x+width, y), (x+width, y+height), (x, y+height), anchor_pos, rect=True)
+
+	@classmethod
+	def from_circle(cls, circle: Circle) -> Self:
+		"""Create a hitbox from a circle.
+
+		Args:
+			circle (Circle): The circle to make the hitbox from
+		"""
+		return cls(circle.position, (circle.radius, 0), circle=True)
 
 	def _get_axes(self, remove_dupes: bool) -> list[Vec2]:
 		"""Get the normal axes of the hitbox (for SAT). These are perpendicular vectors to each edge.
@@ -292,12 +301,9 @@ class Hitbox:
 				Vec2: The projection
 			"""
 			return pyglet.math.clamp(v1.dot(v2) / v2.length_squared(), 0, 1) * v2
-		
-		# Save for later
-		center = circle.position
 
 		# Convert to hitbox
-		converted_circle = Hitbox((center, (circle.radius, 0)), circle=True)
+		converted_circle = Hitbox.from_circle(circle)
 
 		# Get closest point to other hitbox
 		least = Vec2(0, 0), float('inf')
@@ -310,8 +316,8 @@ class Hitbox:
 
 			# Vector from vertex to center of circle
 			pre_proj = Vec2(
-				center[0] - p1[0],
-				center[1] - p1[1]
+				circle.x - p1[0],
+				circle.y - p1[1]
 			)
 			
 			proj = get_projection(pre_proj, vec)
@@ -452,7 +458,7 @@ class Hitbox:
 class HitboxRender(Hitbox):
 	"""Holds a Hitbox with a `render` object to render the hitbox"""
 
-	_hitbox_color = Color.BLACK
+	_hitbox_color: Color
 	
 	def __init__(self,
 			coords: tuple[Point2D, ...],
@@ -475,6 +481,23 @@ class HitboxRender(Hitbox):
 		super().__init__(coords, anchor_pos, circle=circle, rect=rect)
 
 		self._hitbox_color = color
+
+	@classmethod
+	def from_rect(cls,
+			x: float, y: float,
+			width: float, height: float,
+			color: Color, batch: Batch, group: Group,
+			anchor_pos: tuple[AnchorX, AnchorY]=(0, 0)
+	) -> Self:
+		
+		coords = (x, y), (x+width, y), (x+width, y+height), (x, y+height)
+		return cls(coords, color, batch, group, anchor_pos, rect=True)
+
+	@classmethod
+	def from_circle(cls, circle: Circle) -> NoReturn:
+		return NotImplementedError(
+			'HitboxRender.from_circle() not implemented as it is only used for SAT algorithm.'
+		)
 
 	def _calc_coords(self):
 		super()._calc_coords()
