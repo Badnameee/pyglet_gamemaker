@@ -34,7 +34,7 @@ class Rect(HitboxRender):
 
 		super().__init__(
 			((x, y), (x+width, y), (x+width, y+height), (x, y+height)),
-			color, batch, group, anchor_pos, rect=True
+			color, batch, group, anchor_pos, subtype='rect'
 		)
 	
 	@property
