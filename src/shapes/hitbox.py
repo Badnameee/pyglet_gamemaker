@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Literal, Self, NoReturn
+from typing import Literal, Self, NoReturn
 import math
 
 import pyglet
@@ -7,8 +7,6 @@ from pyglet.math import Vec2
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Polygon, Circle
 from ..types import *
-if TYPE_CHECKING:
-	from pyglet.customtypes import AnchorX, AnchorY
 
 
 class Hitbox:
@@ -19,11 +17,11 @@ class Hitbox:
 
 	For _coord vars, there are 3 types of transformation
 	
-		- translated: Adding global position of hitbox to local position (moving in 2D space)
-		
-		- rotated: Adding the rotation of the hitbox
-		
-		- anchored, shifting global position to account for anchor position of hitbox
+	- translated: Adding global position of hitbox to local position (moving in 2D space)
+	
+	- rotated: Adding the rotation of the hitbox
+	
+	- anchored, shifting global position to account for anchor position of hitbox
 	"""
 
 	_local_coords: tuple[Point2D, ...] = tuple()
@@ -83,7 +81,7 @@ class Hitbox:
 			y: float,
 			width: float,
 			height: float,
-			anchor_pos: tuple[AnchorX, AnchorY]
+			anchor_pos: Point2D
 	) -> Self:
 		"""Create a hitbox from rectangle args.
 
@@ -92,7 +90,7 @@ class Hitbox:
 			y (float): y position
 			width (float): Width of rect
 			height (float): Height of rect
-			anchor_pos (float): Anchor position
+			anchor_pos (Point2D): Anchor position
 		"""
 		return cls(
 			(x, y),
@@ -535,8 +533,20 @@ class HitboxRender(Hitbox):
 			x: float, y: float,
 			width: float, height: float,
 			color: Color, batch: Batch, group: Group,
-			anchor_pos: tuple[AnchorX, AnchorY]=(0, 0)
+			anchor_pos: Point2D=(0, 0)
 	) -> Self:
+		"""Create a hitbox render from rectangle dimensions.
+
+		Args:
+			x (float): x position
+			y (float): y position
+			width (float): Width of rect
+			height (float): Height of rect
+			color (Color): The color of the hitbox render
+			batch (Batch): The batch for rendering
+			group (Group): The group for rendering
+			anchor_pos (Point2D): Anchor position
+		"""
 		
 		coords = (x, y), (x+width, y), (x+width, y+height), (x, y+height)
 		return cls(coords, color, batch, group, anchor_pos, rect=True)
