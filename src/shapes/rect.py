@@ -43,7 +43,6 @@ class Rect(HitboxRender):
 
 		To be more specific, the x translation added to the local coords.
 		"""
-
 		return self._trans_pos[0]
 	@x.setter
 	def x(self, val: float) -> None:
@@ -55,7 +54,6 @@ class Rect(HitboxRender):
 
 		To be more specific, the y translation added to the local coords.
 		"""
-
 		return self._trans_pos[1]
 	@y.setter
 	def y(self, val: float) -> None:
@@ -67,7 +65,6 @@ class Rect(HitboxRender):
 
 		To be more specific, the translation added to the local coords.
 		"""
-
 		return self._trans_pos
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
