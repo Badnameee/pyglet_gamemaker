@@ -41,46 +41,37 @@ class Hitbox:
 	"""The final coordinates of the hitbox"""
 	_trans_pos: Point2D
 	"""Holds the translation amount from (0, 0)"""
-	_forced_axes: list[Vec2]
-	"""The axes that are forcibly added on top of normal axes (used for circles)"""
 	is_circle: bool
 	"""Whether hitbox is a circle (for SAT)"""
 	is_rect: bool
 	"""Whether hitbox is a rectangle (for SAT)"""
+	subtype: str | None
+	"""Subtype ('rect', 'circle') of hitbox"""
 
 	def __init__(self,
 			coords: tuple[Point2D, ...],
 			anchor_pos: Point2D=(0, 0),
-			*, circle: bool=False, rect: bool=False
+			*, _subtype: str | None=None
 	) -> None:
 		"""Create a hitbox.
 
 		Args:
 			coords (tuple[Point2D, ...]): The coordinates of the hitbox
 			anchor_pos (Point2D, optional): The starting anchor position. Defaults to (0, 0).
-			circle (bool, optional): Whether hitbox is a circle (for SAT). Defaults to False.
-			rect (bool, optional): Whether hitbox is a rectangle (for SAT). Defaults to False.
 		"""
 
-		if circle and rect:
-			raise ValueError(f'Hitbox cannot be both a circle and rectangle.')
 		if len(coords) < 2:
 			raise ValueError(f'Hitbox needs at least 2 coordinates ({len(coords)} passed).')
-
+		
 		self._trans_pos = coords[0]
 		self._raw_coords = coords
 		self.anchor_pos = anchor_pos
-
-		self._forced_axes = []
-		self.is_circle = circle
-		self.is_rect = rect
+		self.subtype = _subtype
 
 	@classmethod
 	def from_rect(cls,
-			x: float,
-			y: float,
-			width: float,
-			height: float,
+			x: float, y: float,
+			width: float, height: float,
 			anchor_pos: Point2D
 	) -> Self:
 		"""Create a hitbox from rectangle args.
@@ -97,17 +88,8 @@ class Hitbox:
 			(x+width, y),
 			(x+width, y+height),
 			(x, y+height),
-			anchor_pos, rect=True
+			anchor_pos, _subtype='rect'
 		)
-
-	@classmethod
-	def from_circle(cls, circle: Circle) -> Self:
-		"""Create a hitbox from a circle.
-
-		Args:
-			circle (Circle): The circle to make the hitbox from
-		"""
-		return cls(((circle.x - circle.anchor_x, circle.y - circle.anchor_y), (circle.radius, 0)), circle=True)
 
 	def _get_axes(self, remove_dupes: bool) -> list[Vec2]:
 		"""Get the normal axes of the hitbox (for SAT).
@@ -118,15 +100,10 @@ class Hitbox:
 			list[Vec2]: All of the normal axes as vectors.
 		"""
 
-		# Circle only has 1 axis, from forced
-		if self.is_circle:
-			print(self._forced_axes)
-			return self._get_forced_axes()
-
 		axes = []
 
 		# Loops through vertices and gets all adjacent pairs
-		for i in range(len(self.coords) // (2 if remove_dupes and self.is_rect else 1)):
+		for i in range(len(self.coords) // (2 if remove_dupes and self.subtype == 'rect' else 1)):
 			# Grabbing vertex positions
 			p1, p2 = self.coords[i], self.coords[(i+1) % len(self.coords)]
 
@@ -136,15 +113,7 @@ class Hitbox:
 			# Normalizing helps get MTV
 			axes.append(Vec2(-vec[1], vec[0]).normalize())
 
-		return axes + self._get_forced_axes()
-	
-	def _get_forced_axes(self) -> list[Vec2]:
-		"""Gets the normalized (NOT NORMALS) forced axes (for SAT)
-
-		Returns:
-			list[Vec2]: The normals of the forced axes
-		"""
-		return list(map(lambda axis: axis.normalize(), self._forced_axes))
+		return axes
 	
 	def _project(self, axis: Vec2) -> tuple[float, float]:
 		"""Projects the hitbox onto an axis (use self._get_axes()) (for SAT)
@@ -155,11 +124,6 @@ class Hitbox:
 		Returns:
 			tuple[float, float]: The left and right side, respectively, of the projected line
 		"""
-
-		# Circle has simple projection
-		if self.is_circle:
-			proj = axis.dot(Vec2(*self.coords[0]))
-			return proj - self.coords[1][0], proj + self.coords[1][0]
 
 		# Stores the left (minimum) and right (maximum) of line
 		maximum = minimum = axis.dot(Vec2(*self.coords[0]))
@@ -177,10 +141,6 @@ class Hitbox:
 	@staticmethod
 	def _intersect(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
 		"""Checks if two lines intersect (for SAT).
-
-		Args:
-			l1 (tuple[float, float]): Line #1
-			l2 (tuple[float, float]): Line #2
 
 		Returns:
 			bool: Whether lines intersect
@@ -203,10 +163,6 @@ class Hitbox:
 	@staticmethod
 	def _get_intersection_length(l1: tuple[float, float], l2: tuple[float, float]) -> float:
 		"""Gets the length of intersection between 2 lines. (for SAT)
-
-		Args:
-			l1 (tuple[float, float]): Line #1
-			l2 (tuple[float, float]): Line #2
 
 		Returns:
 			float: The length of intersection
@@ -234,10 +190,6 @@ class Hitbox:
 	def _contains(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
 		"""Checks if one of the lines in completely contained inside the other (for SAT)
 
-		Args:
-			l1 (tuple[float, float]): Line #1
-			l2 (tuple[float, float]): Line #2
-
 		Returns:
 			bool: Whether one of the lines is completely contained within other line
 		"""
@@ -258,6 +210,11 @@ class Hitbox:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
 			collision passed and MTV (None if no collision)
 		"""
+
+		# If other is Circle, then call from circle POV to get forced axis
+		#	First clause prevents infinite recursion
+		if self.subtype != 'circle' and other.subtype == 'circle':
+			return other.collide(self, sacrifice_MTV)
 
 		#* Step 1: Get the normal axes of each edge
 		axes = self._get_axes(sacrifice_MTV)
@@ -306,72 +263,6 @@ class Hitbox:
 				return collision_info
 			
 		return False, None
-	
-	@staticmethod
-	def circle_collide(
-			circle: Circle,
-			hitbox: Hitbox,
-			sacrifice_MTV: bool=False
-	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
-		"""Runs the SAT algorithm to check if circle colliding with hitbox
-
-		Args:
-			circle (Circle): Circle
-			hitbox (Hitbox): Hitbox to check collision with
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
-				exchange for no MTV. Defaults to False.
-
-		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
-			collision passed and MTV (None if no collision)
-		"""
-
-		def get_projection(v1: Vec2, v2: Vec2) -> Vec2:
-			"""Projects v1 onto v2, but clamps 1D value before multiplying by v2
-
-			Args:
-				v1 (Vec2): Vector #1
-				v2 (Vec2): Vector #2
-
-			Returns:
-				Vec2: The projection
-			"""
-
-			# Clamping forces the projection to be within the 2 vertices of the polygon
-			#	(or 2 endpoints of v2) by forcing scale factor to be from 0-1
-			#	This facilitates finding closest points on polygon to circle center
-			return pyglet.math.clamp(v1.dot(v2) / v2.length_squared(), 0, 1) * v2
-
-		# Convert to hitbox
-		converted_circle = Hitbox.from_circle(circle)
-
-		# Get closest point to other hitbox
-		least = Vec2(0, 0), float('inf')
-		for i in range(len(hitbox.coords)): # Loop through each axis on polygon
-			# Grabbing vertex positions
-			p1, p2 = hitbox.coords[i], hitbox.coords[(i+1) % len(hitbox.coords)]
-
-			# Calculates the vector between vertices
-			vec = Vec2(p2[0] - p1[0], p2[1] - p1[1])
-
-			# Vector from vertex to center of circle
-			pre_proj = Vec2(
-				circle.x - p1[0],
-				circle.y - p1[1]
-			)
-			
-			# Proj holds the vector from p1 to the closest point
-			#	on the polygon to the circle center
-			proj = get_projection(pre_proj, vec)
-			# Subtracting pre_proj gives vector from circle center to closest point
-			diff = proj - pre_proj
-
-			# Update least
-			if (length:= diff.length()) < least[1]:
-				least = diff, length
-
-		converted_circle._forced_axes.append(least[0])
-		return converted_circle.collide(hitbox, sacrifice_MTV)
 
 	def _calc_coords(self) -> None:
 		"""Updates coordinates based on new , angle, and/or anchor_pos"""
@@ -439,7 +330,7 @@ class Hitbox:
 
 		Args:
 			coord (Point2D): The coordinate to rotate
-			axis (Axis): The Axis to calculate it on
+			axis (Axis): The axis to calculate it on
 		
 		Returns:
 			float | Point2D: The rotated point or single-axis coord
@@ -456,11 +347,7 @@ class Hitbox:
 		)
 
 	def move_to(self, x: float, y: float) -> None:
-		"""Move the hitbox to a location based on anchor
-
-		Args:
-			pos (Point2D): The anchored position to move to
-		"""
+		"""Move the hitbox to a location based on anchor."""
 		self._trans_pos = x, y		
 		self._calc_coords()
 
@@ -501,6 +388,126 @@ class Hitbox:
 		self._calc_coords()
 
 
+class HitboxCircle(Hitbox):
+	"""Holds a hitbox for circle-polygon collisions.
+	
+	Do not try to access `.coords` as they are not real coords.
+	"""
+
+	axis: Vec2
+	"""The axis between the center and the closest point on last hitbox checked for collision."""
+	radius: float
+	"""The radius of the circle"""
+
+	def __init__(self,
+			x: float, y: float, radius: float,
+			anchor_pos: Point2D=(0, 0)
+	) -> None:
+		"""Create a hitbox from a circle.
+
+		Args:
+			x (float): Center-x
+			y (float): Center-y
+			radius (float): The radius of the circle
+			anchor_pos (Point2D, optional): The anchor position. Defaults to (0, 0).
+		"""
+		super().__init__(((x, y), (radius, 0)), anchor_pos, _subtype='circle')
+		self.axis = Vec2(0, 0)
+		self.radius = radius
+
+	def _get_axes(self, sacrifice_MTV: bool) -> list[Vec2]:
+		return [self.axis.normalize()]
+
+	def _project(self, axis: Vec2) -> tuple[float, float]:
+		proj = axis.dot(Vec2(*self.coords[0]))
+		return proj - self.radius, proj + self.radius
+
+	def collide(self, other: Hitbox, sacrifice_MTV: bool = False) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		self.set_collision_axis(other)
+		return super().collide(other, sacrifice_MTV)
+	
+	def set_collision_axis(self,
+			hitbox: Hitbox
+	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		"""Gets closest point on hitbox to circle
+
+		Args:
+			hitbox (Hitbox): Hitbox to check collision with
+
+		Returns:
+			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			collision passed and MTV (None if no collision)
+		"""
+
+		def get_projection(v1: Vec2, v2: Vec2) -> Vec2:
+			# Clamping forces the projection to be within the 2 vertices of the polygon
+			#	(or 2 endpoints of v2) by forcing scale factor to be from 0-1
+			#	This facilitates finding closest points on polygon to circle center
+			return pyglet.math.clamp(v1.dot(v2) / v2.length_squared(), 0, 1) * v2
+
+		# Get closest point to other hitbox
+		least = Vec2(0, 0), float('inf')
+		for i in range(len(hitbox.coords)): # Loop through each axis on polygon
+			# Grabbing vertex positions
+			p1, p2 = hitbox.coords[i], hitbox.coords[(i+1) % len(hitbox.coords)]
+
+			# Calculates the vector between vertices
+			vec = Vec2(p2[0] - p1[0], p2[1] - p1[1])
+
+			# Vector from vertex to center of circle
+			pre_proj = Vec2(
+				self.coords[0][0] - p1[0],
+				self.coords[0][1] - p1[1]
+			)
+			
+			# Proj holds the vector from p1 to the closest point
+			#	on the polygon to the circle center
+			proj = get_projection(pre_proj, vec)
+			# Subtracting pre_proj gives vector from circle center to closest point
+			diff = proj - pre_proj
+
+			# Update least
+			if (length:= diff.length()) < least[1]:
+				least = diff, length
+
+		self.axis = least[0]
+
+	def move_to(self, x: float, y: float) -> None:
+		self.coords = ((x, y), (self.radius, 0))
+		self._trans_pos = x, y
+		self._calc_coords()
+
+	def _calc_coords(self):
+		# Same algorithm as in Hitbox, but optimized for single center coordinate of circle
+		self._local_coords = (0, 0),
+		self._anchor_coords = (-self.anchor_x, -self.anchor_y),
+		self._rotation_amount = (
+			self._get_rotated_pos(self._anchor_coords[0], 'x') - self._anchor_coords[0][0], # type: ignore[operator]
+			self._get_rotated_pos(self._anchor_coords[0], 'y') - self._anchor_coords[0][1] # type: ignore[operator]
+		),
+		self._raw_coords = self._trans_pos,
+		self._unanchored_coords = (
+			self._raw_coords[0][0] + self._rotation_amount[0][0],
+			self._raw_coords[0][1] + self._rotation_amount[0][1]
+		),
+		self.coords = (
+			self._unanchored_coords[0][0] - self.anchor_x,
+			self._unanchored_coords[0][1] - self.anchor_y
+		),
+
+	@property
+	def x(self) -> float:
+		return self._trans_pos[0]
+	
+	@property
+	def y(self) -> float:
+		return self._trans_pos[1]
+	
+	@property
+	def pos(self) -> Point2D:
+		return self._trans_pos
+
+
 class HitboxRender(Hitbox):
 	"""Holds a Hitbox with a `render` object to render the hitbox"""
 
@@ -510,7 +517,7 @@ class HitboxRender(Hitbox):
 			coords: tuple[Point2D, ...],
 			color: Color, batch: Batch, group: Group,
 			anchor_pos: Point2D=(0, 0),
-			*, circle: bool=False, rect: bool=False
+			*, subtype: str | None=None
 	) -> None:
 		"""Create a hitbox render.
 
@@ -524,7 +531,7 @@ class HitboxRender(Hitbox):
 			rect (bool, optional): Whether hitbox is a rectangle (for SAT). Defaults to False.
 		"""
 		self.render = Polygon(*coords, color=color.value, batch=batch, group=group)
-		super().__init__(coords, anchor_pos, circle=circle, rect=rect)
+		super().__init__(coords, anchor_pos, _subtype=subtype)
 
 		self._hitbox_color = color
 
@@ -549,12 +556,12 @@ class HitboxRender(Hitbox):
 		"""
 		
 		coords = (x, y), (x+width, y), (x+width, y+height), (x, y+height)
-		return cls(coords, color, batch, group, anchor_pos, rect=True)
+		return cls(coords, color, batch, group, anchor_pos, subtype='rect')
 
 	@classmethod
-	def from_circle(cls, circle: Circle) -> NoReturn:
+	def from_circle(cls, *args, **kwargs) -> NoReturn:
 		return NotImplementedError(
-			'HitboxRender.from_circle() not implemented as it is only used for SAT algorithm.'
+			'HitboxRender.from_circle() not implemented. Use HitboxRenderCircle instead.'
 		)
 
 	def _calc_coords(self):
@@ -565,6 +572,58 @@ class HitboxRender(Hitbox):
 		self.render._update_vertices()
 		self.render.x = self.coords[0][0]
 		self.render.y = self.coords[0][1]
+
+	@property
+	def hitbox_color(self) -> Color:
+		"""Color of hitbox"""
+		return self._hitbox_color
+	@hitbox_color.setter
+	def hitbox_color(self, val: Color) -> None:
+		self._hitbox_color = val
+		self.render.color = val.value
+
+
+class HitboxRenderCircle(HitboxCircle):
+	"""Holds a Circle Hitbox with a `render` object to render the circle"""
+
+	_hitbox_color: Color
+	
+	def __init__(self,
+			x: float, y: float, radius: float,
+			color: Color, batch: Batch, group: Group,
+			anchor_pos: Point2D=(0, 0),
+	) -> None:
+		"""Create a circular hitbox render
+
+		Args:
+			x (float): Center x
+			y (float): Center y
+			radius (float): The radius of the circle
+			color (Color): The color of the hitbox render
+			batch (Batch): The batch for rendering
+			group (Group): The group for rendering
+			anchor_pos (Point2D, optional): The anchor position. Defaults to (0, 0).
+		"""
+		self.render = Circle(x, y, radius, color=color.value, batch=batch, group=group)
+		super().__init__(x, y, radius, anchor_pos)
+
+		self._hitbox_color = color
+
+	@classmethod
+	def from_rect(cls, *args, **kwargs) -> Self:
+		return NotImplementedError(
+			'HitboxRenderCircle.from_rect() not implemented. Use HitboxRender instead.'
+		)
+
+	@classmethod
+	def from_circle(cls, *args, **kwargs) -> NoReturn:
+		return NotImplementedError(
+			'HitboxRenderCircle.from_circle() not implemented. Use default constructor.'
+		)
+
+	def _calc_coords(self):
+		super()._calc_coords()
+		self.render.position = self.coords[0]
 
 	@property
 	def hitbox_color(self) -> Color:
