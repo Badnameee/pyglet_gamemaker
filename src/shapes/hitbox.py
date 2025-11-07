@@ -14,15 +14,24 @@ if TYPE_CHECKING:
 class Hitbox:
 	"""Store a convex hitbox that uses SAT (Separating Axis Theorem) method for collision.
 
-	Can use `from_rect` to get coords for rectangle or `from_circle` for a circle hitbox (coords are not accurate but optimized for collisions)
+	Can use `from_rect` to get coords for rectangle or `from_circle` for a circle hitbox
+	(coords are not accurate but optimized for collisions)
+
+	For _coord vars, there are 3 types of transformation
+	
+		- translated: Adding global position of hitbox to local position (moving in 2D space)
+		
+		- rotated: Adding the rotation of the hitbox
+		
+		- anchored, shifting global position to account for anchor position of hitbox
 	"""
 
 	_local_coords: tuple[Point2D, ...] = tuple()
 	"""Holds the *untransformed* coords relative to first coordinate"""
 	_raw_coords: tuple[Point2D, ...] = tuple()
-	"""Holds the *untransformed* global coords"""
+	"""Holds the *unrotated* AND *unanchored*, but *translated/global* coords"""
 	_unanchored_coords: tuple[Point2D, ...] = tuple()
-	"""Holds the *unanchored*, global coords"""
+	"""Holds the *unanchored*, *translated/global* coords"""
 	_anchor_coords: tuple[Point2D, ...] = tuple()
 	"""Holds the *untransformed* coords relative to anchor pos"""
 	_rotation_amount: tuple[Point2D, ...] = tuple()
@@ -57,7 +66,7 @@ class Hitbox:
 
 		if circle and rect:
 			raise ValueError(f'Hitbox cannot be both a circle and rectangle.')
-		if len(coords) <= 2:
+		if len(coords) < 2:
 			raise ValueError(f'Hitbox needs at least 2 coordinates ({len(coords)} passed).')
 
 		self._trans_pos = coords[0]
@@ -69,7 +78,13 @@ class Hitbox:
 		self.is_rect = rect
 
 	@classmethod
-	def from_rect(cls, x: float, y: float, width: float, height: float, anchor_pos: tuple[AnchorX, AnchorY]) -> Self:
+	def from_rect(cls,
+			x: float,
+			y: float,
+			width: float,
+			height: float,
+			anchor_pos: tuple[AnchorX, AnchorY]
+	) -> Self:
 		"""Create a hitbox from rectangle args.
 
 		Args:
@@ -79,7 +94,13 @@ class Hitbox:
 			height (float): Height of rect
 			anchor_pos (float): Anchor position
 		"""
-		return cls((x, y), (x+width, y), (x+width, y+height), (x, y+height), anchor_pos, rect=True)
+		return cls(
+			(x, y),
+			(x+width, y),
+			(x+width, y+height),
+			(x, y+height),
+			anchor_pos, rect=True
+		)
 
 	@classmethod
 	def from_circle(cls, circle: Circle) -> Self:
@@ -88,10 +109,12 @@ class Hitbox:
 		Args:
 			circle (Circle): The circle to make the hitbox from
 		"""
-		return cls(circle.position, (circle.radius, 0), circle=True)
+		return cls(((circle.x - circle.anchor_x, circle.y - circle.anchor_y), (circle.radius, 0)), circle=True)
 
 	def _get_axes(self, remove_dupes: bool) -> list[Vec2]:
-		"""Get the normal axes of the hitbox (for SAT). These are perpendicular vectors to each edge.
+		"""Get the normal axes of the hitbox (for SAT).
+		
+		These are perpendicular vectors to each edge.
 
 		Returns:
 			list[Vec2]: All of the normal axes as vectors.
@@ -99,6 +122,7 @@ class Hitbox:
 
 		# Circle only has 1 axis, from forced
 		if self.is_circle:
+			print(self._forced_axes)
 			return self._get_forced_axes()
 
 		axes = []
@@ -154,7 +178,7 @@ class Hitbox:
 	
 	@staticmethod
 	def _intersect(l1: tuple[float, float], l2: tuple[float, float]) -> bool:
-		"""Checks if two lines intersect (for SAT). If you want to get the length of intersection, use .get_intersection_length()
+		"""Checks if two lines intersect (for SAT).
 
 		Args:
 			l1 (tuple[float, float]): Line #1
@@ -180,7 +204,7 @@ class Hitbox:
 	
 	@staticmethod
 	def _get_intersection_length(l1: tuple[float, float], l2: tuple[float, float]) -> float:
-		"""Gets the length of intersection between 2 lines. (call ._intersect() first) (for SAT)
+		"""Gets the length of intersection between 2 lines. (for SAT)
 
 		Args:
 			l1 (tuple[float, float]): Line #1
@@ -223,15 +247,18 @@ class Hitbox:
 	
 	def collide(self, other: Hitbox, sacrifice_MTV: bool=False) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
 		"""Runs the SAT algorithm to determine if 2 objects are colliding.
-			The object method is invoked on should be the one that will move after the algorithm runs. If not, then use -MTV.
-			https://dyn4j.org/2010/01/sat
+		
+		The object method is invoked on should be the one that will move after
+			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
 
 		Args:
 			other (Hitbox): The other hitbox to detect collision with
-			sacrifice_MTV (bool, optional): Whether to optimize speed in exchange for no MTV. Defaults to False.
+			sacrifice_MTV (bool, optional): Whether to optimize speed in
+				exchange for no MTV. Defaults to False.
 
 		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether collision passed and MTV (None if no collision)
+			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			collision passed and MTV (None if no collision)
 		"""
 
 		#* Step 1: Get the normal axes of each edge
@@ -239,7 +266,6 @@ class Hitbox:
 		other_axes = other._get_axes(sacrifice_MTV)
 
 		# These store the length and axis for the MTV
-		# MTV: Minimum Translation Vector: Add to current position of self to get out of colliding.
 		MTV_len = float('inf')
 		MTV_axis = Vec2(0, 0)
 
@@ -253,7 +279,8 @@ class Hitbox:
 			if not self._intersect(l1, l2):
 				return False, None
 			
-			#* Step 4: For MTV - Get the smallest intersection length and store it along with the axis
+			#* Step 4: For MTV - Get the smallest intersection length
+			#*	and store it along with the axis
 			overlap = self._get_intersection_length(l1, l2)
 			if abs(overlap) < abs(MTV_len):
 				MTV_len = overlap
@@ -261,15 +288,20 @@ class Hitbox:
 
 		return True, MTV_axis * MTV_len
 	
-	def collide_any(self, hitboxes: list[Hitbox], sacrifice_MTV: bool=False) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
-		"""Runs the SAT algorithm to check if self colliding with any of the hitboxes
+	def collide_any(self,
+			hitboxes: list[Hitbox],
+			sacrifice_MTV: bool=False
+	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		"""Runs the SAT algorithm on a list of hitboxes.
 
 		Args:
 			hitboxes (list[Hitbox]): List of hitboxes to check collision with self
-			sacrifice_MTV (bool, optional): Whether to optimize speed in exchange for no MTV. Defaults to False.
+			sacrifice_MTV (bool, optional): Whether to optimize speed in
+				exchange for no MTV. Defaults to False.
 
 		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether collision passed and MTV (None if no collision)
+			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			collision passed and MTV (None if no collision)
 		"""
 		for rect in hitboxes:
 			if (collision_info:= self.collide(rect, sacrifice_MTV))[0]:
@@ -278,16 +310,22 @@ class Hitbox:
 		return False, None
 	
 	@staticmethod
-	def circle_collide(circle: Circle, hitbox: Hitbox, sacrifice_MTV) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+	def circle_collide(
+			circle: Circle,
+			hitbox: Hitbox,
+			sacrifice_MTV: bool=False
+	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
 		"""Runs the SAT algorithm to check if circle colliding with hitbox
 
 		Args:
 			circle (Circle): Circle
 			hitbox (Hitbox): Hitbox to check collision with
-			sacrifice_MTV (bool, optional): Whether to optimize speed in exchange for no MTV. Defaults to False.
+			sacrifice_MTV (bool, optional): Whether to optimize speed in
+				exchange for no MTV. Defaults to False.
 
 		Returns:
-			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether collision passed and MTV (None if no collision)
+			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			collision passed and MTV (None if no collision)
 		"""
 
 		def get_projection(v1: Vec2, v2: Vec2) -> Vec2:
@@ -300,6 +338,10 @@ class Hitbox:
 			Returns:
 				Vec2: The projection
 			"""
+
+			# Clamping forces the projection to be within the 2 vertices of the polygon
+			#	(or 2 endpoints of v2) by forcing scale factor to be from 0-1
+			#	This facilitates finding closest points on polygon to circle center
 			return pyglet.math.clamp(v1.dot(v2) / v2.length_squared(), 0, 1) * v2
 
 		# Convert to hitbox
@@ -311,7 +353,7 @@ class Hitbox:
 			# Grabbing vertex positions
 			p1, p2 = hitbox.coords[i], hitbox.coords[(i+1) % len(hitbox.coords)]
 
-			# Calculates the vector between them
+			# Calculates the vector between vertices
 			vec = Vec2(p2[0] - p1[0], p2[1] - p1[1])
 
 			# Vector from vertex to center of circle
@@ -320,7 +362,10 @@ class Hitbox:
 				circle.y - p1[1]
 			)
 			
+			# Proj holds the vector from p1 to the closest point
+			#	on the polygon to the circle center
 			proj = get_projection(pre_proj, vec)
+			# Subtracting pre_proj gives vector from circle center to closest point
 			diff = proj - pre_proj
 
 			# Update least
@@ -341,6 +386,8 @@ class Hitbox:
 		#	5. Add anchor rotation displacement to raw to get unanchored
 		#	6. Add anchor to unanchored to get final
 
+		# Use the raw coords, which are precalculated in __init__
+		#	before first ._calc_coords call
 		self._local_coords = tuple(
 			(
 				coord[0] - self._raw_coords[0][0],
@@ -356,6 +403,7 @@ class Hitbox:
 			)
 			for coord in self._local_coords
 		)
+
 		self._rotation_amount = tuple(
 			(
 				self._get_rotated_pos(coord, 'x') - coord[0], # type: ignore[operator]
