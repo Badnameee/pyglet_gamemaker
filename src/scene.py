@@ -30,7 +30,6 @@ class Scene(ABC, EventDispatcher):
 		"""
 		self.name, self.window = name, window
 		
-		self.register_event_type('on_scene_change')
 		# Adds any event handlers passed through kwargs
 		for name in kwargs:
 			self.register_event_type(name)
