@@ -6,6 +6,12 @@ from .hitbox import HitboxRender
 
 
 class Rect(HitboxRender):
+	"""A rendered rectangle.
+	
+	Has attributes for each vertex (`bottom` / `top` followed by `left` / `right`)
+
+	To create a rectangle without a render, use `shapes.Hitbox.from_rect`
+	"""
 
 	def __init__(self,
 			x: float, y: float,
@@ -13,9 +19,22 @@ class Rect(HitboxRender):
 			color: Color, batch: Batch, group: Group,
 			anchor_pos: Point2D=(0, 0)
 	) -> None:
+		"""Create a rectangle.
+
+		Args:
+			x (float): x position
+			y (float): y position
+			width (float): Width of rect
+			height (float): Height of rect
+			color (Color): The color of the hitbox render
+			batch (Batch): The batch for rendering
+			group (Group): The group for rendering
+			anchor_pos (Point2D, optional): The starting anchor position. Defaults to (0, 0).
+		"""
+
 		super().__init__(
 			((x, y), (x+width, y), (x+width, y+height), (x, y+height)),
-			color, batch, group, anchor_pos
+			color, batch, group, anchor_pos, rect=True
 		)
 	
 	@property

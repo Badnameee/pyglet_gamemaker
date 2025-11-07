@@ -512,7 +512,7 @@ class HitboxRender(Hitbox):
 			anchor_pos: Point2D=(0, 0),
 			*, circle: bool=False, rect: bool=False
 	) -> None:
-		"""_summary_
+		"""Create a hitbox render.
 
 		Args:
 			coords (tuple[Point2D, ...]): The coordinates of the hitbox
