@@ -207,7 +207,7 @@ class Hitbox:
 			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
 
 		Args:
-			other (Hitbox): The other hitbox to detect collision with
+			other (Hitbox | HitboxRender | HitboxRenderCircle): The other hitbox to detect collision with
 			sacrifice_MTV (bool, optional): Whether to optimize speed in
 				exchange for no MTV. Defaults to False.
 
@@ -253,13 +253,13 @@ class Hitbox:
 		return True, MTV_axis * MTV_len
 	
 	def collide_any(self,
-			others: list[Hitbox],
+			others: list[Hitbox | HitboxRender | HitboxRenderCircle],
 			sacrifice_MTV: bool=False
 	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
 		"""Runs the SAT algorithm on a list of others.
 
 		Args:
-			others (list[Hitbox]): List of others to check collision with self
+			others (list[Hitbox | HitboxRender | HitboxRenderCircle]): List of others to check collision with self
 			sacrifice_MTV (bool, optional): Whether to optimize speed in
 				exchange for no MTV. Defaults to False.
 
@@ -415,8 +415,8 @@ class HitboxCircle(Hitbox):
 		"""Create a hitbox from a circle.
 
 		Args:
-			x (float): Center-x
-			y (float): Center-y
+			x (float): Center x
+			y (float): Center y
 			radius (float): The radius of the circle
 			anchor_pos (Point2D, optional): The anchor position. Defaults to (0, 0).
 		"""
@@ -439,7 +439,7 @@ class HitboxCircle(Hitbox):
 		return super().collide(other, sacrifice_MTV)
 
 	def collide_any(self,
-			others: list[Hitbox],
+			others: list[Hitbox | HitboxRender | HitboxRenderCircle],
 			sacrifice_MTV: bool=False
 	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
 		for rect in others:
@@ -523,14 +523,17 @@ class HitboxCircle(Hitbox):
 
 	@property
 	def x(self) -> float:
+		"""Center x position of circle"""
 		return self._trans_pos[0]
 	
 	@property
 	def y(self) -> float:
+		"""Center y position of circle"""
 		return self._trans_pos[1]
 	
 	@property
 	def pos(self) -> Point2D:
+		"""Center position of circle"""
 		return self._trans_pos
 
 
@@ -598,12 +601,37 @@ class HitboxRender:
 			other: Hitbox | HitboxRender | HitboxRenderCircle,
 			sacrifice_MTV: bool=False
 	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		"""Runs the SAT algorithm to determine if 2 objects are colliding.
+		
+		The object method is invoked on should be the one that will move after
+			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
+
+		Args:
+			other (Hitbox | HitboxRender | HitboxRenderCircle): The other hitbox to detect collision with
+			sacrifice_MTV (bool, optional): Whether to optimize speed in
+				exchange for no MTV. Defaults to False.
+
+		Returns:
+			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			collision passed and MTV (None if no collision)
+		"""
 		return self.hitbox.collide(other, sacrifice_MTV)
 	
 	def collide_any(self,
-			others: list[Hitbox],
+			others: list[Hitbox | HitboxRender | HitboxRenderCircle],
 			sacrifice_MTV: bool=False
 	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		"""Runs the SAT algorithm on a list of others.
+
+		Args:
+			others (list[Hitbox | HitboxRender | HitboxRenderCircle]): List of others to check collision with self
+			sacrifice_MTV (bool, optional): Whether to optimize speed in
+				exchange for no MTV. Defaults to False.
+
+		Returns:
+			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			collision passed and MTV (None if no collision)
+		"""
 		return self.hitbox.collide_any(others, sacrifice_MTV)
 
 	def _calc_coords(self):
@@ -700,12 +728,37 @@ class HitboxRenderCircle:
 			other: Hitbox | HitboxRender | HitboxRenderCircle,
 			sacrifice_MTV: bool=False
 	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		"""Runs the SAT algorithm to determine if 2 objects are colliding.
+		
+		The object method is invoked on should be the one that will move after
+			the algorithm runs. If not, then make MTV negative. https://dyn4j.org/2010/01/sat
+
+		Args:
+			other (Hitbox | HitboxRender | HitboxRenderCircle): The other hitbox to detect collision with
+			sacrifice_MTV (bool, optional): Whether to optimize speed in
+				exchange for no MTV. Defaults to False.
+
+		Returns:
+			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			collision passed and MTV (None if no collision)
+		"""
 		return self.hitbox.collide(other, sacrifice_MTV)
 	
 	def collide_any(self,
-			others: list[Hitbox],
+			others: list[Hitbox | HitboxRender | HitboxRenderCircle],
 			sacrifice_MTV: bool=False
 	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
+		"""Runs the SAT algorithm on a list of others.
+
+		Args:
+			others (list[Hitbox | HitboxRender | HitboxRenderCircle]): List of others to check collision with self
+			sacrifice_MTV (bool, optional): Whether to optimize speed in
+				exchange for no MTV. Defaults to False.
+
+		Returns:
+			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
+			collision passed and MTV (None if no collision)
+		"""
 		return self.hitbox.collide_any(others, sacrifice_MTV)
 
 	def _calc_coords(self):
@@ -713,6 +766,7 @@ class HitboxRenderCircle:
 		self.render.position = self.hitbox.coords[0]
 		
 	def move_to(self, x: float, y: float) -> None:
+		"""Move the hitbox to a location based on anchor."""
 		self.hitbox.coords = ((x, y), (self.hitbox.radius, 0))
 		self.hitbox._trans_pos = x, y
 		self._calc_coords()
@@ -755,14 +809,17 @@ class HitboxRenderCircle:
 
 	@property
 	def x(self) -> float:
+		"""Center x position of circle"""
 		return self.hitbox.x
 	
 	@property
 	def y(self) -> float:
+		"""Center y position of circle"""
 		return self.hitbox.y
 	
 	@property
 	def pos(self) -> Point2D:
+		"""Center position of circle"""
 		return self.hitbox.pos
 
 	@property
