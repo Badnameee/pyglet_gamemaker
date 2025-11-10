@@ -8,7 +8,7 @@ from .hitbox import HitboxRender
 class Rect(HitboxRender):
 	"""A rendered rectangle.
 	
-	Has attributes for each vertex (`bottom` / `top` followed by `left` / `right`)
+	Has attributes for each vertex (`bottomleft`, `bottomright`, `topright`, `topleft`)
 
 	To create a rectangle without a render, use `shapes.Hitbox.from_rect`
 	"""
