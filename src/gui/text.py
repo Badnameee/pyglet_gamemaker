@@ -50,36 +50,6 @@ class Text(Label):
 		self.font_info = font_info
 		self.text = text
 
-	@classmethod
-	def from_scale[T: Text](cls: type[T],
-			scale: tuple[float, float],
-			window: Window,
-			text: str,
-			batch: Batch , group: Group,
-			anchor: tuple[AnchorX, AnchorY] = ('center', 'baseline'),
-			font_info: FontInfo = (None, None),
-			color: Color = Color.WHITE,
-	) -> T:
-		"""Create a button with text.
-
-		Args:
-			scale (tuple[float, float]): The (x, y) scale for label
-			window (Window): Window for scaling
-			text (str): Label text
-			batch (Batch): Batch for rendering
-			group (Group): Group for rendering
-			anchor (tuple[AnchorX, AnchorY], optional): Anchor for both axes. Defaults to ('center', 'baseline').
-			font_info (FontInfo, optional): Font name and size. Defaults to (None, None).
-			color (Color, optional): Color of text. Defaults to Color.WHITE.
-		"""
-		return cls(
-			text, scale[0] * window.width, scale[1] * window.height,
-			batch, group,
-			anchor,
-			font_info,
-			color,
-		)
-
 	def offset(self, val: Point2D) -> None:
 		"""Add from current offset of the text by an amount."""
 		self.x += val[0]
