@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pyglet.graphics import Batch, Group
-from ..types import Color, Point2D
+from ..types import *
 from .hitbox import HitboxRender
 
 
