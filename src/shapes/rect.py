@@ -43,10 +43,10 @@ class Rect(HitboxRender):
 
 		To be more specific, the x translation added to the local coords.
 		"""
-		return self._trans_pos[0]
+		return self.hitbox._trans_pos[0]
 	@x.setter
 	def x(self, val: float) -> None:
-		self.move_to(val, self._trans_pos[1])
+		self.move_to(x=val)
 	
 	@property
 	def y(self) -> float:
@@ -54,10 +54,10 @@ class Rect(HitboxRender):
 
 		To be more specific, the y translation added to the local coords.
 		"""
-		return self._trans_pos[1]
+		return self.hitbox._trans_pos[1]
 	@y.setter
 	def y(self, val: float) -> None:
-		self.move_to(self._trans_pos[0], val)
+		self.move_to(y=val)
 	
 	@property
 	def pos(self) -> Point2D:
@@ -65,7 +65,7 @@ class Rect(HitboxRender):
 
 		To be more specific, the translation added to the local coords.
 		"""
-		return self._trans_pos
+		return self.hitbox._trans_pos
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
 		self.move_to(*val)
@@ -76,7 +76,7 @@ class Rect(HitboxRender):
 
 		To be more specific, the *unrotated* AND *unanchored* vertex position.
 		"""
-		return self._raw_coords[0]
+		return self.hitbox._raw_coords[0]
 	
 	@property
 	def bottomright(self) -> Point2D:
@@ -84,7 +84,7 @@ class Rect(HitboxRender):
 
 		To be more specific, the *unrotated* AND *unanchored* vertex position.
 		"""
-		return self._raw_coords[1]
+		return self.hitbox._raw_coords[1]
 	
 	@property
 	def topright(self) -> Point2D:
@@ -92,7 +92,7 @@ class Rect(HitboxRender):
 
 		To be more specific, the *unrotated* AND *unanchored* vertex position.
 		"""
-		return self._raw_coords[2]
+		return self.hitbox._raw_coords[2]
 	
 	@property
 	def topleft(self) -> Point2D:
@@ -100,38 +100,38 @@ class Rect(HitboxRender):
 
 		To be more specific, the *unrotated* AND *unanchored* vertex position.
 		"""
-		return self._raw_coords[3]
+		return self.hitbox._raw_coords[3]
 	
 	@property
 	def width(self) -> float:
 		"""The width of the *unrotated* rectangle."""
-		return self._raw_coords[1][0] - self._raw_coords[0][0]
+		return self.hitbox._raw_coords[1][0] - self.hitbox._raw_coords[0][0]
 	@width.setter
 	def width(self, val: float) -> None:
 		# Set raw coords instead of local coords because ._calc_coords
 		#	updates local coords for us. Updates to local coords would
 		#	get overwritten when calling ._calc_coords
-		self._raw_coords = (
-			self._raw_coords[0],
-			(self._raw_coords[0][0] + val, self._raw_coords[1][1]),
-			(self._raw_coords[3][0] + val, self._raw_coords[2][1]),
-			self._raw_coords[3]
+		self.hitbox._raw_coords = (
+			self.hitbox._raw_coords[0],
+			(self.hitbox._raw_coords[0][0] + val, self.hitbox._raw_coords[1][1]),
+			(self.hitbox._raw_coords[3][0] + val, self.hitbox._raw_coords[2][1]),
+			self.hitbox._raw_coords[3]
 		)
 		self._calc_coords()
 	
 	@property
 	def height(self) -> float:
 		"""The height of the *unrotated* rectangle."""
-		return self._raw_coords[3][1] - self._raw_coords[0][1]
+		return self.hitbox._raw_coords[3][1] - self.hitbox._raw_coords[0][1]
 	@height.setter
 	def height(self, val: float) -> None:
 		# Set raw coords instead of local coords because ._calc_coords
 		#	updates local coords for us. Updates to local coords would
 		#	get overwritten when calling ._calc_coords
-		self._raw_coords = (
-			self._raw_coords[0],
-			self._raw_coords[1],
-			(self._raw_coords[2][0], self._raw_coords[1][1] + val),
-			(self._raw_coords[3][0], self._raw_coords[0][1] + val)
+		self.hitbox._raw_coords = (
+			self.hitbox._raw_coords[0],
+			self.hitbox._raw_coords[1],
+			(self.hitbox._raw_coords[2][0], self.hitbox._raw_coords[1][1] + val),
+			(self.hitbox._raw_coords[3][0], self.hitbox._raw_coords[0][1] + val)
 		)
 		self._calc_coords()

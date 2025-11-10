@@ -355,8 +355,15 @@ class Hitbox:
 			coord[0] * math.sin(self.angle) + coord[1] * math.cos(self.angle)
 		)
 
-	def move_to(self, x: float, y: float) -> None:
-		"""Move the hitbox to a location based on anchor."""
+	def move_to(self, x: float | None=None, y: float | None=None) -> None:
+		"""Move the hitbox to a location based on anchor. Setting argument to None (default) will not change that axis pos.
+
+		Args:
+			x (float | None, optional): New x. Defaults to None.
+			y (float | None, optional): New y. Defaults to None.
+		"""
+		x = x if x is not None else self._trans_pos[0]
+		y = y if y is not None else self._trans_pos[1]
 		self._trans_pos = x, y		
 		self._calc_coords()
 
@@ -516,10 +523,17 @@ class HitboxCircle(Hitbox):
 			self._unanchored_coords[0][1] - self.anchor_y
 		),
 
-	def move_to(self, x: float, y: float) -> None:
+	def move_to(self, x: float | None=None, y: float | None=None) -> None:
+		"""Move the hitbox to a location based on anchor. Setting argument to None (default) will not change that axis pos.
+
+		Args:
+			x (float | None, optional): New x. Defaults to None.
+			y (float | None, optional): New y. Defaults to None.
+		"""
+		x = x if x is not None else self._trans_pos[0]
+		y = y if y is not None else self._trans_pos[1]
 		self.coords = ((x, y), (self.radius, 0))
-		self._trans_pos = x, y
-		self._calc_coords()
+		super().move_to(x, y)
 
 	@property
 	def x(self) -> float:
@@ -643,9 +657,16 @@ class HitboxRender:
 		self.render.x = self.hitbox.coords[0][0]
 		self.render.y = self.hitbox.coords[0][1]
 	
-	def move_to(self, x: float, y: float) -> None:
-		"""Move the hitbox to a location based on anchor."""
-		self.hitbox._trans_pos = x, y		
+	def move_to(self, x: float | None=None, y: float | None=None) -> None:
+		"""Move the hitbox to a location based on anchor. Setting argument to None (default) will not change that axis pos.
+
+		Args:
+			x (float | None, optional): New x. Defaults to None.
+			y (float | None, optional): New y. Defaults to None.
+		"""
+		x = x if x is not None else self.hitbox._trans_pos[0]
+		y = y if y is not None else self.hitbox._trans_pos[1]
+		self.hitbox._trans_pos = x, y	
 		self._calc_coords()
 
 	@property
@@ -765,8 +786,15 @@ class HitboxRenderCircle:
 		self.hitbox._calc_coords()
 		self.render.position = self.hitbox.coords[0]
 		
-	def move_to(self, x: float, y: float) -> None:
-		"""Move the hitbox to a location based on anchor."""
+	def move_to(self, x: float | None=None, y: float | None=None) -> None:
+		"""Move the hitbox to a location based on anchor. Setting argument to None (default) will not change that axis pos.
+
+		Args:
+			x (float | None, optional): New x. Defaults to None.
+			y (float | None, optional): New y. Defaults to None.
+		"""
+		x = x if x is not None else self.hitbox._trans_pos[0]
+		y = y if y is not None else self.hitbox._trans_pos[1]
 		self.hitbox.coords = ((x, y), (self.hitbox.radius, 0))
 		self.hitbox._trans_pos = x, y
 		self._calc_coords()
