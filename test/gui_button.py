@@ -13,9 +13,6 @@ batch = Batch()
 button_group = Group()
 UI_group = Group(1)
 
-pyglet.resource.path = ['test']
-pyglet.resource.reindex()
-
 sheet = SpriteSheet('Default Button.png', 3, 1)
 sheet.name('Unpressed', 'Hover', 'Pressed')
 

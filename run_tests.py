@@ -1,3 +1,5 @@
+import pyglet
+
 # Holds all imports for tests
 tests = [
 	'sprite_spritesheet',
@@ -7,6 +9,9 @@ tests = [
 	'shapes_hitbox',
 	'shapes_rect',
 ]
+
+pyglet.resource.path = ['test']
+pyglet.resource.reindex()
 
 for test_num, test in enumerate(tests, 1):
 	print(

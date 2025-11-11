@@ -11,9 +11,6 @@ pyglet.gl.glClearColor(1, 1, 1, 1)
 batch = Batch()
 group = Group()
 
-pyglet.resource.path = ['test']
-pyglet.resource.reindex()
-
 sheet = SpriteSheet('Default Button.png', 3, 1)
 sheet.name('Unpressed', 'Hover', 'Pressed')
 
@@ -22,19 +19,25 @@ def on_half_click(button):
 def on_full_click(button):
 	print(f'{button} fully pressed and releaased!')
 
+hover_enlarge = 3
+
 @window.event
-def on_key_press(symbol: int, modifiers: int):
+def on_key_press(symbol, modifiers):
 	if symbol == key.LEFT:
 		button.x -= 10
 	elif symbol == key.RIGHT:
 		button.x += 10
-	elif symbol == key.DOWN:
-		button.y -= 10
 	elif symbol == key.UP:
 		button.y += 10
-	elif symbol == key.R and button.hover_enlarge != 0:
-		button.hover_enlarge = 0
-		print('Button enlarging removed!')
+	elif symbol == key.DOWN:
+		button.y -= 10
+	elif symbol == key.R:
+		if button.hover_enlarge == 0:
+			button.hover_enlarge = hover_enlarge
+			print('Button enlarging added!')
+		else:
+			button.hover_enlarge = 0
+			print('Button enlarging removed!')
 	else:
 		return
 
@@ -53,7 +56,7 @@ button = TextButton(
 	('center', 'center'),
 	('center', 'center'),
 	font_info=('Arial', 30),
-	hover_enlarge=3,
+	hover_enlarge=hover_enlarge,
 	on_half_click=on_half_click, on_full_click=on_full_click
 )
 
