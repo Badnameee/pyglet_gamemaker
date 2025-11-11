@@ -72,11 +72,7 @@ class Button(_PushButton):
 			batch, group
 		) # type: ignore[arg-type]
 
-		# Calculate anchor
 		self.anchor = anchor
-		# Translate pos
-		x -= self.anchor_pos[0]
-		y -= self.anchor_pos[1]
 
 		self.ID = ID
 		self.window = window
