@@ -54,7 +54,7 @@ class Button(_PushButton):
 			x (float): Anchored x position of button
 			y (float): Anchored y position of button
 			anchor (tuple[AnchorX | float, AnchorY | float]): Anchor for both axes.
-				Float - static anchor, Anchor string - dynamic anchor
+				*Float* -- static anchor, *AnchorX/Y* -- dynamic anchor
 			image_sheet (SpriteSheet): SpriteSheet with the button images
 			image_start (str | int): The starting index of the button images
 			window (Window): Window for attaching self
@@ -213,3 +213,23 @@ class Button(_PushButton):
 	@property
 	def height(self) -> int:
 		return self.hover_img.height
+	
+	@property
+	def dynamic_x(self) -> bool:
+		"""Whether anchor x is dynamic"""
+		return isinstance(self._anchor[0], str)
+	
+	@property
+	def dynamic_y(self) -> bool:
+		"""Whether anchor y is dynamic"""
+		return isinstance(self._anchor[1], str)
+	
+	@property
+	def dynamic(self) -> bool:
+		"""Whether anchor is dynamic"""
+		return isinstance(self._anchor[0], str) and isinstance(self._anchor[1], str)
+	
+	@property
+	def dynamic_any(self) -> bool:
+		"""Whether anchor is dynamic on either axis"""
+		return isinstance(self._anchor[0], str) or isinstance(self._anchor[1], str)

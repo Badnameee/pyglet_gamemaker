@@ -50,7 +50,7 @@ class Text(Label):
 			batch (Batch): Batch for rendering
 			group (Group): Group for rendering
 			anchor (tuple[AnchorX | float, AnchorY | float], optional): Anchor for both axes.
-				*Float* -- static anchor, *Anchor string* -- dynamic anchor.
+				*Float* -- static anchor, *AnchorX/Y* -- dynamic anchor.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional): Font name and size.
 				Defaults to (None, None).
@@ -89,13 +89,13 @@ class Text(Label):
 			(
 				# Convert if AnchorX, else use raw int value
 				self.ANCHOR_TYPE_TO_FACTOR[self._anchor[0]] * self.content_width
-				if isinstance(self._anchor[0], str) else
+				if self.dynamic_x else
 				self._anchor[0]
 			),
 			(
 				# Convert if AnchorY, else use raw int value
 				self.ANCHOR_TYPE_TO_FACTOR[self._anchor[1]] * self.content_height
-				if isinstance(self._anchor[1], str) else
+				if self.dynamic_y else
 				self._anchor[1]
 			)
 		)
@@ -179,3 +179,23 @@ class Text(Label):
 	def anchor(self, val: tuple[AnchorX | float, AnchorY | float]) -> None:
 		self._anchor = val
 		self._calc_anchor_pos()
+
+	@property
+	def dynamic_x(self) -> bool:
+		"""Whether anchor x is dynamic"""
+		return isinstance(self._anchor[0], str)
+	
+	@property
+	def dynamic_y(self) -> bool:
+		"""Whether anchor y is dynamic"""
+		return isinstance(self._anchor[1], str)
+	
+	@property
+	def dynamic(self) -> bool:
+		"""Whether anchor is dynamic"""
+		return isinstance(self._anchor[0], str) and isinstance(self._anchor[1], str)
+	
+	@property
+	def dynamic_any(self) -> bool:
+		"""Whether anchor is dynamic on either axis"""
+		return isinstance(self._anchor[0], str) or isinstance(self._anchor[1], str)
