@@ -49,8 +49,11 @@ class Text(Label):
 			y (float): Anchored y position
 			batch (Batch): Batch for rendering
 			group (Group): Group for rendering
-			anchor (tuple[AnchorX | float, AnchorY | float], optional): Anchor for both axes.
-				*Float* -- static anchor, *AnchorX/Y* -- dynamic anchor.
+			anchor (tuple[AnchorX | float, AnchorY | float], optional):
+				Anchor for both axes.
+				*Float* -- static anchor, *See
+				`pyglet.customtypes.AnchorX` / `pyglet.customtypes.AnchorY`*
+				-- dynamic anchor.
 				Defaults to (0, 0).
 			font_info (FontInfo, optional): Font name and size.
 				Defaults to (None, None).
@@ -132,7 +135,7 @@ class Text(Label):
 	@y.setter
 	def y(self, val: float) -> None:
 		self._pos = self._pos[0], val
-		self._set_y(val - self.anchor_pos[1])
+		self._set_y(val - self.anchor_pos[1] - self._descent) # Fixes y not centering
 
 	@property
 	def pos(self) -> Point2D:
@@ -143,7 +146,7 @@ class Text(Label):
 		self._pos = val
 		self._set_position((
 			val[0] - self.anchor_pos[0],
-			val[1] - self.anchor_pos[1],
+			val[1] - self.anchor_pos[1] - self._descent, # Fixes y not centering
 			self._z
 		))
 
