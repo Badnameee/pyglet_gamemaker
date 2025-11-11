@@ -44,7 +44,7 @@ class Button(_PushButton):
 			ID: str,
 			x: float, y: float, anchor: tuple[AnchorX | float, AnchorY | float],
 			image_sheet: SpriteSheet, image_start: str | int,
-			window: Window, batch: Batch | None, group: Group | None,
+			window: Window, batch: Batch, group: Group,
 			**kwargs
 	) -> None:
 		"""Create a button.

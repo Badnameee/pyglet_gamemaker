@@ -38,8 +38,8 @@ class Text(Label):
 			x: float, y: float,
 			batch: Batch, group: Group,
 			anchor: tuple[AnchorX | float, AnchorY | float]=(0, 0),
-			font_info: FontInfo = (None, None),
-			color: Color = Color.WHITE,
+			font_info: FontInfo=(None, None),
+			color: Color=Color.WHITE,
 	) -> None:
 		"""Create a text label.
 
