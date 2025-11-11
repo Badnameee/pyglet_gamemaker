@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class Button(_PushButton):
 	"""A basic 2D button.
 	
-	Takes images for all 3 states ('Unpressed', 'Hover', 'Pressed').
+	Takes a sprite sheet (using `sprite.Spritesheet`)
 
 	Dispatches:
 	- 'on_half_click' when pressed
