@@ -120,7 +120,6 @@ class Hitbox:
 
 		# Circle only has 1 axis, from forced
 		if self.is_circle:
-			print(self._forced_axes)
 			return self._get_forced_axes()
 
 		axes = []
@@ -251,7 +250,7 @@ class Hitbox:
 
 		Args:
 			other (Hitbox): The other hitbox to detect collision with
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
+			sacrifice_MTV (bool, optional): If True, optimize speed in
 				exchange for no MTV. Defaults to False.
 
 		Returns:
@@ -294,7 +293,7 @@ class Hitbox:
 
 		Args:
 			hitboxes (list[Hitbox]): List of hitboxes to check collision with self
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
+			sacrifice_MTV (bool, optional): If True, optimize speed in
 				exchange for no MTV. Defaults to False.
 
 		Returns:
@@ -318,7 +317,7 @@ class Hitbox:
 		Args:
 			circle (Circle): Circle
 			hitbox (Hitbox): Hitbox to check collision with
-			sacrifice_MTV (bool, optional): Whether to optimize speed in
+			sacrifice_MTV (bool, optional): If True, optimize speed in
 				exchange for no MTV. Defaults to False.
 
 		Returns:
