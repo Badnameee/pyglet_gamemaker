@@ -1,9 +1,9 @@
 # Holds all imports for tests
 tests = [
+	'sprite_spritesheet',
 	'gui_button',
 	'gui_text',
 	'gui_text_button',
-	'sprite_spritesheet',
 	'shapes_hitbox',
 	'shapes_rect',
 ]
