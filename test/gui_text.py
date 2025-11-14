@@ -1,5 +1,8 @@
 # type: ignore
 
+import string
+import random
+
 import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
@@ -13,7 +16,8 @@ UI_group = Group(1)
 
 @window.event
 def on_mouse_motion(x, y, dx, dy):
-	txt.pos = x, y
+	#txt.pos = x, y
+	txt.offset((dx, dy))
 	txt_anchor.position = txt.pos
 	print(f'New txt pos: {txt.pos}')
 
@@ -33,6 +37,11 @@ def on_key_press(symbol, modifiers):
 		txt.rotation += 10
 	elif symbol == key.R:
 		txt.reset()
+		txt.text = 'Hello World'
+	elif symbol == key.P:
+		txt.text += random.choice(string.ascii_lowercase)
+	elif symbol == key.O:
+		txt.text = txt.text[:-1]
 	else:
 		return
 
@@ -50,6 +59,7 @@ txt = Text(
 	batch, txt_group,
 	('center', 'center'), ('Arial', 50)
 )
+txt.start_pos = 320, 240
 txt_anchor = Circle(*txt.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
 
 pyglet.app.run()
