@@ -5,7 +5,6 @@ from ..types import *
 from .text import Text
 from .button import Button
 if TYPE_CHECKING:
-	from pyglet.customtypes import AnchorX, AnchorY
 	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
 	from ..sprite import SpriteSheet
@@ -36,10 +35,10 @@ class TextButton:
 
 			# Button params
 			image_sheet: SpriteSheet, image_start: str | int,
-			button_anchor: tuple[AnchorX | float, AnchorY | float]=(0, 0),
+			button_anchor: Anchor=(0, 0),
 			
 			# Text params
-			text_anchor: tuple[AnchorX | float, AnchorY | float]=(0, 0),
+			text_anchor: Anchor=(0, 0),
 			font_info: FontInfo=(None, None),
 			color: Color=Color.WHITE,
 
@@ -48,29 +47,42 @@ class TextButton:
 		"""Create a button with text
 
 		Args:
-			ID (str): Name/ID of widget
-			text (str): Label text
-			x (float): Anchored x position of button
-			y (float): Anchored y position of button
-			window (Window): Window for attaching self
-			batch (Batch): Batch for rendering
-			group (Group): Group for rendering
-			image_sheet (SpriteSheet): SpriteSheet with the button images
-			image_start (str | int): The starting index of the button images
-			button_anchor (tuple[AnchorX | float, AnchorY | float], optional): Anchor for the button.
-				*Float* -- static anchor, *AnchorX/Y* -- dynamic anchor.
+			ID (str):
+				Name/ID of widget
+			text (str):
+				Label text
+			x (float):
+				Anchored x position of button
+			y (float):
+				Anchored y position of button
+			window (Window):
+				Window for attaching self
+			batch (Batch):
+				Batch for rendering
+			group (Group):
+				Group for rendering
+			image_sheet (SpriteSheet):
+				SpriteSheet with the button images
+			image_start (str | int):
+				The starting index of the button images
+			button_anchor (Anchor, optional):
+				Anchor position for the button. See `gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
-			text_anchor (tuple[AnchorX | float, AnchorY | float], optional): Anchor for the text.
-				*Float* -- static anchor, *AnchorX/Y* -- dynamic anchor.
+			text_anchor (Anchor, optional):
+				Anchor position for the text. See `gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
-			font_info (FontInfo, optional): Font name and size.
+			font_info (FontInfo, optional):
+				Font name and size.
 				Defaults to (None, None).
-			color (Color, optional): Color of text.
+			color (Color, optional):
+				Color of text.
 				Defaults to Color.WHITE.
-			hover_enlarge (int, optional): How much to enlarge text when hovered over.
+			hover_enlarge (int, optional):
+				How much to enlarge text when hovered over.
 				Defaults to 0.
 
-			**kwargs: Any event handlers to attach (such as 'on_full_click')
+			**kwargs:
+				Any event handlers to attach (such as 'on_full_click')
 		"""
 
 		self.button = Button(
@@ -112,7 +124,7 @@ class TextButton:
 				# Use new dimensions to find difference to recenter
 				self.text.anchor_x += (self.text.content_width - prev[0]) / 2
 				self.text.anchor_y += (self.text.content_height - prev[1]) / 2
-				self.text._convert_anchor()
+				self.text._calc_anchor_pos(self.text._anchor)
 		else:
 			# First frame unhover: unenlarge text
 			if self.enlarged:
@@ -127,7 +139,7 @@ class TextButton:
 				# Use new dimensions to find difference to recenter
 				self.text.anchor_x += (self.text.content_width - prev[0]) / 2
 				self.text.anchor_y += (self.text.content_height - prev[1]) / 2
-				self.text._convert_anchor()
+				self.text._calc_anchor_pos(self.text._anchor)
 
 	def on_mouse_press(self,
 			x: int, y: int,
@@ -194,11 +206,11 @@ class TextButton:
 		"""
 		return self.button.anchor_x
 	@anchor_x.setter
-	def anchor_x(self, val: AnchorX | float) -> None:
-		self.button.anchor_x = val
+	def anchor_x(self, val: AnchorX) -> None:
+		self.button.anchor_x = self.text.anchor_x = val
 		# Subtract half of width diff between items (because text centered in button)
 		#	to correct for different sized text
-		self.text.anchor_x = val - (self.button.width - self.text.content_width) / 2
+		self.text.anchor_x -= (self.button.width - self.text.content_width) / 2
 		self._enlarge()
 
 	@property
@@ -211,11 +223,11 @@ class TextButton:
 		"""
 		return self.button.anchor_y
 	@anchor_y.setter
-	def anchor_y(self, val: AnchorY | float) -> None:
-		self.button.anchor_y = val
+	def anchor_y(self, val: AnchorY) -> None:
+		self.button.anchor_y = self.text.anchor_y = val
 		# Subtract half of height diff between items (because text centered in button)
 		#	to correct for different sized text
-		self.text.anchor_y = val - (self.button.height - self.text.content_height) / 2
+		self.text.anchor_y -= (self.button.height - self.text.content_height) / 2
 		self._enlarge()
 
 	@property
@@ -226,7 +238,7 @@ class TextButton:
 		"""
 		return self.button.anchor
 	@anchor.setter
-	def anchor(self, val: tuple[AnchorX | float, AnchorY | float]) -> None:
+	def anchor(self, val: Anchor) -> None:
 		self.button.anchor = self.text.anchor = val
 		self._enlarge()
 

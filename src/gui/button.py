@@ -5,7 +5,6 @@ from ..types import *
 from pyglet.gui import PushButton as _PushButton
 if TYPE_CHECKING:
 	from pyglet.image import AbstractImage
-	from pyglet.customtypes import AnchorX, AnchorY
 	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
 	from ..sprite import SpriteSheet
@@ -40,8 +39,8 @@ class Button(_PushButton):
 	unpressed_img: AbstractImage
 	hover_img: AbstractImage
 	pressed_img: AbstractImage
-	_anchor: tuple[AnchorX | float, AnchorY | float] = 0, 0
-	ID: int
+	_anchor: Point2D = 0, 0
+	ID: str
 	window: Window
 	status: ButtonStatus
 
@@ -49,7 +48,7 @@ class Button(_PushButton):
 	
 	def __init__(self,
 			ID: str,
-			x: float, y: float, anchor: tuple[AnchorX | float, AnchorY | float],
+			x: float, y: float, anchor: Anchor,
 			image_sheet: SpriteSheet, image_start: str | int,
 			window: Window, batch: Batch, group: Group,
 			*, attach_events: bool=True,
@@ -58,17 +57,26 @@ class Button(_PushButton):
 		"""Create a button.
 
 		Args:
-			ID (str): Name/ID of widget
-			x (float): Anchored x position of button
-			y (float): Anchored y position of button
-			anchor (tuple[AnchorX | float, AnchorY | float]): Anchor for both axes.
-				See `gui.Button`. Defaults to (0, 0).
-			image_sheet (SpriteSheet): SpriteSheet with the button images
-			image_start (str | int): The starting index of the button images
-			window (Window): Window for attaching self
-			batch (Batch): Batch for rendering
-			group (Group): Group for rendering
-			attach_events (bool, optional): If False, don't push mouse event handlers to window
+			ID (str):
+				Name/ID of widget
+			x (float):
+				Anchored x position of button
+			y (float):
+				Anchored y position of button
+			anchor (Anchor):
+				Anchor position. See `gui.Button` for more info on anchor values. Defaults to (0, 0).
+			image_sheet (SpriteSheet):
+				SpriteSheet with the button images
+			image_start (str | int):
+				The starting index of the button images
+			window (Window):
+				Window for attaching self
+			batch (Batch):
+				Batch for rendering
+			group (Group):
+				Group for rendering
+			attach_events (bool, optional):
+				If False, don't push mouse event handlers to window
 			kwargs: Event handlers (name=func)
 		"""
 		
@@ -77,10 +85,10 @@ class Button(_PushButton):
 		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[start:start + 3] # type: ignore[misc]
 
 		super().__init__(
-			x, y,
+			x, y,													# type: ignore[arg-type]
 			self.pressed_img, self.unpressed_img, self.hover_img,
 			batch, group
-		) # type: ignore[arg-type]
+		)
 
 		self.anchor = anchor
 
@@ -109,20 +117,19 @@ class Button(_PushButton):
 		else:
 			self.status = 'Unpressed'
 
-	def _calc_anchor_pos(self, val: tuple[AnchorX | float, AnchorY | float]) -> None:
+	def _calc_anchor_pos(self, val: Anchor) -> None:
 		"""Calculate a new anchor position and sync position."""
 		prev_pos = self.pos
-		self._anchor = val
 		self._anchor = (
 			(
-				self.CONVERT_DYNAMIC[self._anchor[0]] * self.hover_img.width
-				if isinstance(self._anchor[0], str) else
-				self._anchor[0]
+				self.CONVERT_DYNAMIC[val[0]] * self.hover_img.width
+				if isinstance(val[0], str) else
+				val[0]
 			),
 			(
-				self.CONVERT_DYNAMIC[self._anchor[1]] * self.hover_img.height
-				if isinstance(self._anchor[1], str) else
-				self._anchor[1]
+				self.CONVERT_DYNAMIC[val[1]] * self.hover_img.height
+				if isinstance(val[1], str) else
+				val[1]
 			)
 		)
 		# Refresh position
@@ -174,7 +181,7 @@ class Button(_PushButton):
 	def x(self, val: float) -> None:
 		_PushButton.x.fset(self, val - self._anchor[0]) # type: ignore[attr-defined]
 		# Sync status
-		self.on_mouse_motion(*self._last_mouse_pos, 0, 0)
+		self.on_mouse_motion(*self._last_mouse_pos, 0, 0) # type: ignore[arg-type]
 
 	@property # type: ignore[override]
 	def y(self) -> float:
@@ -184,7 +191,7 @@ class Button(_PushButton):
 	def y(self, val: float) -> None:
 		_PushButton.y.fset(self, val - self._anchor[1]) # type: ignore[attr-defined]
 		# Sync status
-		self.on_mouse_motion(*self._last_mouse_pos, 0, 0)
+		self.on_mouse_motion(*self._last_mouse_pos, 0, 0) # type: ignore[arg-type]
 
 	@property
 	def pos(self) -> Point2D:
@@ -192,9 +199,9 @@ class Button(_PushButton):
 		return self._x + self._anchor[0], self._y + self._anchor[1]
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self.position = val[0] - self._anchor[0], val[1] - self._anchor[1]
+		self.position = val[0] - self._anchor[0], val[1] - self._anchor[1] # type: ignore[assignment] # bro widget can take float
 		# Sync status
-		self.on_mouse_motion(*self._last_mouse_pos, 0, 0)
+		self.on_mouse_motion(*self._last_mouse_pos, 0, 0) # type: ignore[arg-type]
 
 	@property
 	def anchor_x(self) -> float:
@@ -206,7 +213,7 @@ class Button(_PushButton):
 		"""
 		return self._anchor[0]
 	@anchor_x.setter
-	def anchor_x(self, val: AnchorX | float) -> None:
+	def anchor_x(self, val: AnchorX) -> None:
 		self._calc_anchor_pos((val, self._anchor[1]))
 
 	@property
@@ -219,7 +226,7 @@ class Button(_PushButton):
 		"""
 		return self._anchor[1]
 	@anchor_y.setter
-	def anchor_y(self, val: AnchorY | float) -> None:
+	def anchor_y(self, val: AnchorY) -> None:
 		self._calc_anchor_pos((self._anchor[0], val))
 
 	@property
@@ -230,7 +237,7 @@ class Button(_PushButton):
 		"""
 		return self._anchor
 	@anchor.setter
-	def anchor(self, val: tuple[AnchorX | float, AnchorY | float]) -> None:
+	def anchor(self, val: Anchor) -> None:
 		self._calc_anchor_pos(val)
 
 	@property

@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 from ..types import *
 from pyglet.text import Label
 if TYPE_CHECKING:
-	from pyglet.customtypes import AnchorX, AnchorY
 	from pyglet.graphics import Batch, Group
 
 
@@ -30,6 +29,7 @@ class Text(Label):
 
 	_text: str = ''
 	_pos: Point2D = 0, 0
+	_anchor: Point2D = 0, 0
 
 	start_pos: Point2D
 	"""Original (*unanchored* AND *unrotated*) position of text"""
@@ -40,27 +40,31 @@ class Text(Label):
 			text: str,
 			x: float, y: float,
 			batch: Batch, group: Group,
-			anchor: tuple[AnchorX | float, AnchorY | float]=(0, 0),
+			anchor: Anchor=(0, 0),
 			font_info: FontInfo=(None, None),
 			color: Color=Color.WHITE,
 	) -> None:
 		"""Create a text label.
 
 		Args:
-			text (str): Label text
-			x (float): Anchored x position
-			y (float): Anchored y position
-			batch (Batch): Batch for rendering
-			group (Group): Group for rendering
-			anchor (tuple[AnchorX | float, AnchorY | float], optional):
-				Anchor for both axes.
-				*Float* -- static anchor, *See
-				`pyglet.customtypes.AnchorX` / `pyglet.customtypes.AnchorY`*
-				-- dynamic anchor.
+			text (str):
+				Label text
+			x (float):
+				Anchored x position
+			y (float):
+				Anchored y position
+			batch (Batch):
+				Batch for rendering
+			group (Group):
+				Group for rendering
+			anchor (Anchor, optional):
+				Anchor position. See `gui.Text` for more info on anchor values.
 				Defaults to (0, 0).
-			font_info (FontInfo, optional): Font name and size.
+			font_info (FontInfo, optional):
+				Font name and size.
 				Defaults to (None, None).
-			color (Color, optional): Color of text.
+			color (Color, optional):
+				Color of text.
 				Defaults to Color.WHITE.
 		"""
 
@@ -90,20 +94,20 @@ class Text(Label):
 		self.pos = self.start_pos
 		self.font_name, self.font_size = self.font_info # type: ignore[assignment]
 
-	def _convert_anchor(self) -> None:
-		"""Converts dynamic anchors to multipliers and sync position"""
+	def _calc_anchor_pos(self, val: Anchor) -> None:
+		"""Calculate a new anchor position and sync position."""
 		self._anchor = (
 			(
 				# Convert if AnchorX, else use raw int value
-				self.CONVERT_DYNAMIC[self._anchor[0]] * self.content_width
-				if isinstance(self._anchor[0], str) else
-				self._anchor[0]
+				self.CONVERT_DYNAMIC[val[0]] * self.content_width
+				if isinstance(val[0], str) else
+				val[0]
 			),
 			(
 				# Convert if AnchorY, else use raw int value
-				self.CONVERT_DYNAMIC[self._anchor[1]] * self.content_height
-				if isinstance(self._anchor[0], str) else
-				self._anchor[1]
+				self.CONVERT_DYNAMIC[val[1]] * self.content_height
+				if isinstance(val[1], str) else
+				val[1]
 			)
 		)
 		# Refresh position
@@ -154,7 +158,7 @@ class Text(Label):
 			self._z
 		))
 
-	@property
+	@property # type: ignore[override]
 	def anchor_x(self) -> float:
 		"""The unconverted x anchor of the text.
 
@@ -164,11 +168,10 @@ class Text(Label):
 		"""
 		return self._anchor[0]
 	@anchor_x.setter
-	def anchor_x(self, val: AnchorX | float) -> None:
-		self._anchor = val, self._anchor[1]
-		self._convert_anchor()
+	def anchor_x(self, val: AnchorX) -> None:
+		self._calc_anchor_pos((val, self._anchor[1]))
 
-	@property
+	@property # type: ignore[override]
 	def anchor_y(self) -> float:
 		"""The unconverted y anchor of the text.
 
@@ -178,9 +181,8 @@ class Text(Label):
 		"""
 		return self._anchor[1]
 	@anchor_y.setter
-	def anchor_y(self, val: AnchorY | float) -> None:
-		self._anchor = self._anchor[0], val
-		self._convert_anchor()
+	def anchor_y(self, val: AnchorY) -> None:
+		self._calc_anchor_pos((self._anchor[0], val))
 
 	@property
 	def anchor(self) -> Point2D:
@@ -190,6 +192,5 @@ class Text(Label):
 		"""
 		return self._anchor
 	@anchor.setter
-	def anchor(self, val: tuple[AnchorX | float, AnchorY | float]) -> None:
-		self._anchor = val
-		self._convert_anchor()
+	def anchor(self, val: Anchor) -> None:
+		self._calc_anchor_pos(val)

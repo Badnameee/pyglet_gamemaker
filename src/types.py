@@ -1,10 +1,15 @@
 from enum import Enum
 from typing import Literal
 
+from pyglet.customtypes import AnchorX as _AnchorX, AnchorY as _AnchorY
+
 Point2D = tuple[float, float]
 FontInfo = tuple[str | None, int | None]
 ButtonStatus = Literal['Unpressed', 'Hover', 'Pressed']
 Axis = Literal['x', 'y', 'xy']
+AnchorX = _AnchorX | float
+AnchorY = _AnchorY | float
+Anchor = tuple[AnchorX, AnchorY]
 
 
 class Color(Enum):
