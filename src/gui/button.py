@@ -36,15 +36,25 @@ class Button(_PushButton):
 	}
 	"""Converts dynamic anchor to multiplier"""
 
-	unpressed_img: AbstractImage
-	hover_img: AbstractImage
-	pressed_img: AbstractImage
 	_anchor: Point2D = 0, 0
-	ID: str
-	window: Window
-	status: ButtonStatus
 
+	unpressed_img: AbstractImage
+	"""Image of unpressed button"""
+	hover_img: AbstractImage
+	"""Image of hovered button"""
+	pressed_img: AbstractImage
+	"""Image of pressed button"""
+	ID: str
+	"""Identifier of button"""
+	window: Window
+	"""Window button is associated with"""
+	status: ButtonStatus
+	"""Status of button"""
 	_last_mouse_pos: Point2D = 0, 0
+	"""Holds the last mouse position registered by button"""
+
+	raw_anchor: Anchor = None, None
+	"""Holds the raw anchor position (static + dynamic)"""
 	
 	def __init__(self,
 			ID: str,
@@ -77,7 +87,8 @@ class Button(_PushButton):
 				Group for rendering
 			attach_events (bool, optional):
 				If False, don't push mouse event handlers to window
-			kwargs: Event handlers (name=func)
+			kwargs:
+				Event handlers (name=func)
 		"""
 		
 		# Extract images from sheet
@@ -89,6 +100,8 @@ class Button(_PushButton):
 			self.pressed_img, self.unpressed_img, self.hover_img,
 			batch, group
 		)
+
+		self.start_pos = x, y
 
 		self.anchor = anchor
 
@@ -103,6 +116,19 @@ class Button(_PushButton):
 		for name in kwargs:
 			self.register_event_type(name)
 		self.push_handlers(**kwargs)
+
+	def offset(self, val: Point2D) -> None:
+		"""Add from current offset of the text by an amount"""
+		self.x += val[0]
+		self.y += val[1]
+
+	def set_offset(self, val: Point2D) -> None:
+		"""Set offset of the text to an amount"""
+		self.pos = self.start_pos[0] + val[0], self.start_pos[1] + val[1]
+
+	def reset(self) -> None:
+		"""Reset text to initial state"""
+		self.pos = self.start_pos
 	
 	def _update_status(self, x: int, y: int) -> None:
 		"""Updates the status of the button given mouse position."""
@@ -120,6 +146,7 @@ class Button(_PushButton):
 	def _calc_anchor_pos(self, val: Anchor) -> None:
 		"""Calculate a new anchor position and sync position."""
 		prev_pos = self.pos
+		self.raw_anchor = val
 		self._anchor = (
 			(
 				self.CONVERT_DYNAMIC[val[0]] * self.hover_img.width
@@ -205,7 +232,7 @@ class Button(_PushButton):
 
 	@property
 	def anchor_x(self) -> float:
-		"""The unconverted x anchor of the button.
+		"""The x anchor of the button, in px.
 
 		Can be set in px or dynamic.
 		
@@ -218,7 +245,7 @@ class Button(_PushButton):
 
 	@property
 	def anchor_y(self) -> float:
-		"""The unconverted y anchor of the button.
+		"""The y anchor of the button, in px.
 
 		Can be set in px or dynamic.
 		
@@ -231,7 +258,7 @@ class Button(_PushButton):
 
 	@property
 	def anchor(self) -> Point2D:
-		"""The unconverted anchor of the button.
+		"""The anchor of the button, in px.
 		
 		Can be set in px or dynamic.
 		"""
