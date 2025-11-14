@@ -23,25 +23,24 @@ class TextButton:
 	_hover_enlarge = 0
 
 	window: Window
-	enlarged: bool
+	"""Window button is associated with."""
 	button: Button
+	"""Button object"""
 	text: Text
+	"""Text object"""
+	_enlarged: bool = False
+	"""If true, text is currently enlarged. Used internally to enlarge text once."""
 
 	def __init__(self,
 			ID: str,
 			text: str,
 			x: float, y: float,
 			window: Window, batch: Batch, group: Group,
-
-			# Button params
 			image_sheet: SpriteSheet, image_start: str | int,
 			button_anchor: Anchor=(0, 0),
-			
-			# Text params
 			text_anchor: Anchor=(0, 0),
 			font_info: FontInfo=(None, None),
 			color: Color=Color.WHITE,
-
 			hover_enlarge: int = 0, **kwargs
 	) -> None:
 		"""Create a button with text
@@ -90,7 +89,6 @@ class TextButton:
 			image_sheet, image_start,
 			window, batch, group, attach_events=False, **kwargs
 		)
-		self.enlarged = False
 		self.hover_enlarge = hover_enlarge
 
 		self.text = Text(
@@ -112,8 +110,8 @@ class TextButton:
 		# Hovering
 		if self.button.status == 'Hover':
 			# First frame hover: enlarge text
-			if not self.enlarged:
-				self.enlarged = True
+			if not self._enlarged:
+				self._enlarged = True
 
 				#* Automatically centers text when enlarging
 				# First get previous dimensions
@@ -127,8 +125,8 @@ class TextButton:
 				self.text._calc_anchor_pos(self.text._anchor)
 		else:
 			# First frame unhover: unenlarge text
-			if self.enlarged:
-				self.enlarged = False
+			if self._enlarged:
+				self._enlarged = False
 
 				#* Automatically centers text when enlarging
 				# First get previous dimensions
@@ -256,7 +254,7 @@ class TextButton:
 	@hover_enlarge.setter
 	def hover_enlarge(self, size: int) -> None:
 		# If need to be resized and synced
-		if self.enlarged:
+		if self._enlarged:
 			#* Trick: Can unhover and rehover button to make changes automatically.
 			#	This way, no copy pasting code needed.
 			#	Because status is being manually set instead of in Button._update_status,
