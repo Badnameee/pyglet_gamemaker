@@ -51,8 +51,9 @@ def on_draw():
 	batch.draw()
 
 button = Button(
-	'Hi', 320, 240, ('center', 'center'),
+	'Hi', 320, 240,
 	sheet, 0, window, batch, button_group,
+	('center', 'center'),
 	on_half_click=on_half_click, on_full_click=on_full_click
 )
 button_anchor = Circle(*button.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
