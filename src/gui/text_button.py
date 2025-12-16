@@ -85,9 +85,11 @@ class TextButton:
 		"""
 
 		self.button = Button(
-			ID, x, y, button_anchor,
+			ID, x, y,
 			image_sheet, image_start,
-			window, batch, group, attach_events=False, **kwargs
+			window, batch, group,
+			button_anchor,
+			attach_events=False, **kwargs
 		)
 		self.hover_enlarge = hover_enlarge
 
@@ -120,9 +122,20 @@ class TextButton:
 				self.text.font_size += self.hover_enlarge
 
 				# Use new dimensions to find difference to recenter
-				self.text.anchor_x += (self.text.content_width - prev[0]) / 2
-				self.text.anchor_y += (self.text.content_height - prev[1]) / 2
-				self.text._calc_anchor_pos(self.text._anchor)
+				#	Have to check if dynamic anchor first
+				if isinstance(self.text.raw_anchor[0], str):
+					# Store the previous dynamic anchor to set
+					#	because adding to anchor x makes anchor static
+					anchor = self.text.raw_anchor
+					self.text.anchor_x += (self.text.content_width - prev[0]) / 2
+					self.text.raw_anchor = anchor
+
+				if isinstance(self.text.raw_anchor[1], str):
+					# Store the previous dynamic anchor to set
+					#	because adding to anchor x makes anchor static
+					anchor = self.text.raw_anchor
+					self.text.anchor_y += (self.text.content_height - prev[1]) / 2
+					self.text.raw_anchor = anchor
 		else:
 			# First frame unhover: unenlarge text
 			if self._enlarged:
@@ -135,9 +148,19 @@ class TextButton:
 				self.text.font_size -= self.hover_enlarge
 
 				# Use new dimensions to find difference to recenter
-				self.text.anchor_x += (self.text.content_width - prev[0]) / 2
-				self.text.anchor_y += (self.text.content_height - prev[1]) / 2
-				self.text._calc_anchor_pos(self.text._anchor)
+				if isinstance(self.text.raw_anchor[0], str):
+					# Store the previous dynamic anchor to set
+					#	because adding to anchor x makes anchor static
+					anchor = self.text.raw_anchor
+					self.text.anchor_x += (self.text.content_width - prev[0]) / 2
+					self.text.raw_anchor = anchor
+					
+				if isinstance(self.text.raw_anchor[1], str):
+					# Store the previous dynamic anchor to set
+					#	because adding to anchor x makes anchor static
+					anchor = self.text.raw_anchor
+					self.text.anchor_y += (self.text.content_height - prev[1]) / 2
+					self.text.raw_anchor = anchor
 
 	def on_mouse_press(self,
 			x: int, y: int,
@@ -237,7 +260,7 @@ class TextButton:
 		return self.button.anchor
 	@anchor.setter
 	def anchor(self, val: Anchor) -> None:
-		self.button.anchor = self.text.anchor = val
+		self.anchor_x, self.anchor_y = val
 		self._enlarge()
 
 	@property

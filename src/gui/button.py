@@ -58,9 +58,10 @@ class Button(_PushButton):
 	
 	def __init__(self,
 			ID: str,
-			x: float, y: float, anchor: Anchor,
+			x: float, y: float,
 			image_sheet: SpriteSheet, image_start: str | int,
 			window: Window, batch: Batch, group: Group,
+			anchor: Anchor=(0, 0),
 			*, attach_events: bool=True,
 			**kwargs
 	) -> None:
@@ -73,9 +74,6 @@ class Button(_PushButton):
 				Anchored x position of button
 			y (float):
 				Anchored y position of button
-			anchor (Anchor):
-				Anchor position. See `gui.Button` for more info on anchor values.
-				Defaults to (0, 0).
 			image_sheet (SpriteSheet):
 				SpriteSheet with the button images
 			image_start (str | int):
@@ -86,6 +84,9 @@ class Button(_PushButton):
 				Batch for rendering
 			group (Group):
 				Group for rendering
+			anchor (Anchor):
+				Anchor position. See `gui.Button` for more info on anchor values.
+				Defaults to (0, 0).
 			attach_events (bool, optional):
 				If False, don't push mouse event handlers to window
 			kwargs:
