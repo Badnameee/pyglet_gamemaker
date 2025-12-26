@@ -36,21 +36,32 @@ class Button(_PushButton):
 	}
 	"""Converts dynamic anchor to multiplier"""
 
-	unpressed_img: AbstractImage
-	hover_img: AbstractImage
-	pressed_img: AbstractImage
 	_anchor: Point2D = 0, 0
-	ID: str
-	window: Window
-	status: ButtonStatus
 
+	unpressed_img: AbstractImage
+	"""Image of unpressed button"""
+	hover_img: AbstractImage
+	"""Image of hovered button"""
+	pressed_img: AbstractImage
+	"""Image of pressed button"""
+	ID: str
+	"""Identifier of button"""
+	window: Window
+	"""Window button is associated with"""
+	status: ButtonStatus
+	"""Status of button"""
 	_last_mouse_pos: Point2D = 0, 0
+	"""Holds the last mouse position registered by button"""
+
+	raw_anchor: Anchor = None, None
+	"""Holds the raw anchor position (static + dynamic)"""
 	
 	def __init__(self,
 			ID: str,
-			x: float, y: float, anchor: Anchor,
+			x: float, y: float,
 			image_sheet: SpriteSheet, image_start: str | int,
 			window: Window, batch: Batch, group: Group,
+			anchor: Anchor=(0, 0),
 			*, attach_events: bool=True,
 			**kwargs
 	) -> None:
@@ -63,8 +74,6 @@ class Button(_PushButton):
 				Anchored x position of button
 			y (float):
 				Anchored y position of button
-			anchor (Anchor):
-				Anchor position. See `gui.Button` for more info on anchor values. Defaults to (0, 0).
 			image_sheet (SpriteSheet):
 				SpriteSheet with the button images
 			image_start (str | int):
@@ -75,20 +84,25 @@ class Button(_PushButton):
 				Batch for rendering
 			group (Group):
 				Group for rendering
+			anchor (Anchor):
+				Anchor position. See `gui.Button` for more info on anchor values.
+				Defaults to (0, 0).
 			attach_events (bool, optional):
 				If False, don't push mouse event handlers to window
-			kwargs: Event handlers (name=func)
+			kwargs:
+				Event handlers (name=func)
 		"""
 		
 		# Extract images from sheet
-		start = image_sheet.lookup[image_start] if isinstance(image_start, str) else image_start
-		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[start:start + 3] # type: ignore[misc]
+		self._parse_sheet(image_sheet, image_start)
 
 		super().__init__(
-			x, y,													# type: ignore[arg-type]
+			x, y, # type: ignore[arg-type]
 			self.pressed_img, self.unpressed_img, self.hover_img,
 			batch, group
 		)
+
+		self.start_pos = x, y
 
 		self.anchor = anchor
 
@@ -103,9 +117,32 @@ class Button(_PushButton):
 		for name in kwargs:
 			self.register_event_type(name)
 		self.push_handlers(**kwargs)
+
+	def offset(self, val: Point2D) -> None:
+		"""Add from current offset of the text by an amount"""
+		self.x += val[0]
+		self.y += val[1]
+
+	def set_offset(self, val: Point2D) -> None:
+		"""Set offset of the text to an amount"""
+		self.pos = self.start_pos[0] + val[0], self.start_pos[1] + val[1]
+
+	def reset(self) -> None:
+		"""Reset text to initial state"""
+		self.pos = self.start_pos
+
+	def update_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
+		"""Update the sheet of the button"""
+		self._parse_sheet(image_sheet, image_start)
+		self._calc_anchor_pos(self.raw_anchor)
+
+	def _parse_sheet(self, image_sheet: SpriteSheet, image_start: str | int) -> None:
+		"""Parse a sheet into individual images and store them"""
+		start = image_sheet.lookup[image_start] if isinstance(image_start, str) else image_start
+		self.unpressed_img, self.hover_img, self.pressed_img = image_sheet[start:start + 3] # type: ignore[misc]
 	
 	def _update_status(self, x: int, y: int) -> None:
-		"""Updates the status of the button given mouse position."""
+		"""Update the status of the button given mouse position"""
 		if self.value:
 			if self.status != 'Pressed':
 				self.dispatch_event('on_half_click', self)
@@ -118,8 +155,9 @@ class Button(_PushButton):
 			self.status = 'Unpressed'
 
 	def _calc_anchor_pos(self, val: Anchor) -> None:
-		"""Calculate a new anchor position and sync position."""
+		"""Calculate a new anchor position and sync position"""
 		prev_pos = self.pos
+		self.raw_anchor = val
 		self._anchor = (
 			(
 				self.CONVERT_DYNAMIC[val[0]] * self.hover_img.width
@@ -139,6 +177,8 @@ class Button(_PushButton):
 			x: int, y: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.enabled:
+			return
 		self._last_mouse_pos = x, y
 		super().on_mouse_press(x, y, buttons, modifiers)
 		self._update_status(x, y)
@@ -147,6 +187,8 @@ class Button(_PushButton):
 			x: int, y: int,
 			dx: int, dy: int
 	) -> None:
+		if not self.enabled:
+			return
 		self._last_mouse_pos = x, y
 		super().on_mouse_motion(x, y, dx, dy)
 		self._update_status(x, y)
@@ -155,6 +197,8 @@ class Button(_PushButton):
 			x: int, y: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.enabled:
+			return
 		self._last_mouse_pos = x, y
 		super().on_mouse_release(x, y, buttons, modifiers)
 		self._update_status(x, y)
@@ -163,6 +207,8 @@ class Button(_PushButton):
 			x: int, y: int, dx: int, dy: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.enabled:
+			return
 		self._last_mouse_pos = x, y
 		super().on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._update_status(x, y)
@@ -205,7 +251,7 @@ class Button(_PushButton):
 
 	@property
 	def anchor_x(self) -> float:
-		"""The unconverted x anchor of the button.
+		"""The x anchor of the button, in px.
 
 		Can be set in px or dynamic.
 		
@@ -218,7 +264,7 @@ class Button(_PushButton):
 
 	@property
 	def anchor_y(self) -> float:
-		"""The unconverted y anchor of the button.
+		"""The y anchor of the button, in px.
 
 		Can be set in px or dynamic.
 		
@@ -231,7 +277,7 @@ class Button(_PushButton):
 
 	@property
 	def anchor(self) -> Point2D:
-		"""The unconverted anchor of the button.
+		"""The anchor of the button, in px.
 		
 		Can be set in px or dynamic.
 		"""

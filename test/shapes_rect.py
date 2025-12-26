@@ -1,4 +1,3 @@
-# type: ignore
 
 import pyglet
 from pyglet.window import Window, key

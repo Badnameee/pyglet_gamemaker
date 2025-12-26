@@ -1,5 +1,3 @@
-# type: ignore
-
 import random
 
 import pyglet
@@ -12,7 +10,8 @@ from src.sprite import SpriteSheet
 window = Window(640, 480, caption=__name__)
 pyglet.gl.glClearColor(1, 1, 1, 1)
 batch = Batch()
-text_button_group = Group()
+txt_group = Group()
+button_group = Group()
 UI_group = Group()
 
 sheet = SpriteSheet('Default Button.png', 3, 1)
@@ -58,7 +57,7 @@ def on_draw():
 button = TextButton(
 	'Hi',
 	'This is text!', 320, 240,
-	window, batch, text_button_group,
+	window, batch, button_group, txt_group,
 	sheet, 0,
 	('center', 'center'),
 	('center', 'center'),

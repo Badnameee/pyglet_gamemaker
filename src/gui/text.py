@@ -35,6 +35,8 @@ class Text(Label):
 	"""Original (*unanchored* AND *unrotated*) position of text"""
 	font_info: FontInfo
 	"""(name, size)"""
+	raw_anchor: Anchor = None, None
+	"""Holds the raw anchor position (static + dynamic)"""
 
 	def __init__(self,
 			text: str,
@@ -95,7 +97,8 @@ class Text(Label):
 		self.font_name, self.font_size = self.font_info # type: ignore[assignment]
 
 	def _calc_anchor_pos(self, val: Anchor) -> None:
-		"""Calculate a new anchor position and sync position."""
+		"""Calculate a new anchor position and sync position"""
+		self.raw_anchor = val
 		self._anchor = (
 			(
 				# Convert if AnchorX, else use raw int value
@@ -113,6 +116,10 @@ class Text(Label):
 		# Refresh position
 		self.pos = self.pos
 
+	def enable(self) -> None: ...
+
+	def disable(self) -> None: ...
+
 	@property
 	def text(self) -> str:
 		"""The text string"""
@@ -120,6 +127,7 @@ class Text(Label):
 	@text.setter
 	def text(self, txt: str | int) -> None:
 		self.document.text = self._text = str(txt)
+		self._calc_anchor_pos(self.raw_anchor)
 
 	@property
 	def x(self) -> float:
@@ -160,7 +168,7 @@ class Text(Label):
 
 	@property # type: ignore[override]
 	def anchor_x(self) -> float:
-		"""The unconverted x anchor of the text.
+		"""The x anchor of the text, in px.
 
 		Can be set in px or dynamic.
 		
@@ -173,7 +181,7 @@ class Text(Label):
 
 	@property # type: ignore[override]
 	def anchor_y(self) -> float:
-		"""The unconverted y anchor of the text.
+		"""The y anchor of the text, in px.
 
 		Can be set in px or dynamic.
 		
@@ -186,7 +194,7 @@ class Text(Label):
 
 	@property
 	def anchor(self) -> Point2D:
-		"""The unconverted anchor of the text.
+		"""The anchor of the text, in px.
 		
 		Can be set in px or dynamic.
 		"""

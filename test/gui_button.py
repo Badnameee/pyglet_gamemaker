@@ -1,5 +1,3 @@
-# type: ignore
-
 import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
@@ -24,13 +22,13 @@ def on_full_click(button):
 @window.event
 def on_key_press(symbol, modifiers):
 	if symbol == key.A:
-		button.x -= 10
+		button.offset((-10, 0))
 	elif symbol == key.D:
-		button.x += 10
+		button.offset((10, 0))
 	elif symbol == key.W:
-		button.y += 10
+		button.offset((0, 10))
 	elif symbol == key.S:
-		button.y -= 10
+		button.offset((0, -10))
 	elif symbol == key.LEFT:
 		button.anchor_x -= 10
 	elif symbol == key.RIGHT:
@@ -39,6 +37,8 @@ def on_key_press(symbol, modifiers):
 		button.anchor_y += 10
 	elif symbol == key.DOWN:
 		button.anchor_y -= 10
+	elif symbol == key.R:
+		button.reset()
 	else:
 		return
 
@@ -51,8 +51,9 @@ def on_draw():
 	batch.draw()
 
 button = Button(
-	'Hi', 320, 240, ('center', 'center'),
+	'Hi', 320, 240,
 	sheet, 0, window, batch, button_group,
+	('center', 'center'),
 	on_half_click=on_half_click, on_full_click=on_full_click
 )
 button_anchor = Circle(*button.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)

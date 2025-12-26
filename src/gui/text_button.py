@@ -23,26 +23,25 @@ class TextButton:
 	_hover_enlarge = 0
 
 	window: Window
-	enlarged: bool
+	"""Window button is associated with."""
 	button: Button
+	"""Button object"""
 	text: Text
+	"""Text object"""
+	_enlarged: bool = False
+	"""If true, text is currently enlarged. Used internally to enlarge text once."""
 
 	def __init__(self,
 			ID: str,
 			text: str,
 			x: float, y: float,
-			window: Window, batch: Batch, group: Group,
-
-			# Button params
+			window: Window, batch: Batch, button_group: Group, text_group: Group,
 			image_sheet: SpriteSheet, image_start: str | int,
 			button_anchor: Anchor=(0, 0),
-			
-			# Text params
 			text_anchor: Anchor=(0, 0),
 			font_info: FontInfo=(None, None),
 			color: Color=Color.WHITE,
-
-			hover_enlarge: int = 0, **kwargs
+			hover_enlarge: int=0, **kwargs
 	) -> None:
 		"""Create a button with text
 
@@ -86,17 +85,18 @@ class TextButton:
 		"""
 
 		self.button = Button(
-			ID, x, y, button_anchor,
+			ID, x, y,
 			image_sheet, image_start,
-			window, batch, group, attach_events=False, **kwargs
+			window, batch, button_group,
+			button_anchor,
+			attach_events=False, **kwargs
 		)
-		self.enlarged = False
 		self.hover_enlarge = hover_enlarge
 
 		self.text = Text(
 			text,
 			x, y,
-			batch, group,
+			batch, text_group,
 			text_anchor,
 			font_info,
 			color,
@@ -107,13 +107,13 @@ class TextButton:
 		self.window.push_handlers(self)
 
 	def _enlarge(self) -> None:
-		"""Enlarge the text based on button status."""
+		"""Enlarge the text based on button status"""
 
 		# Hovering
 		if self.button.status == 'Hover':
 			# First frame hover: enlarge text
-			if not self.enlarged:
-				self.enlarged = True
+			if not self._enlarged:
+				self._enlarged = True
 
 				#* Automatically centers text when enlarging
 				# First get previous dimensions
@@ -122,13 +122,24 @@ class TextButton:
 				self.text.font_size += self.hover_enlarge
 
 				# Use new dimensions to find difference to recenter
-				self.text.anchor_x += (self.text.content_width - prev[0]) / 2
-				self.text.anchor_y += (self.text.content_height - prev[1]) / 2
-				self.text._calc_anchor_pos(self.text._anchor)
+				#	Have to check if dynamic anchor first
+				if isinstance(self.text.raw_anchor[0], str):
+					# Store the previous dynamic anchor to set
+					#	because adding to anchor x makes anchor static
+					anchor = self.text.raw_anchor
+					self.text.anchor_x += (self.text.content_width - prev[0]) / 2
+					self.text.raw_anchor = anchor
+
+				if isinstance(self.text.raw_anchor[1], str):
+					# Store the previous dynamic anchor to set
+					#	because adding to anchor x makes anchor static
+					anchor = self.text.raw_anchor
+					self.text.anchor_y += (self.text.content_height - prev[1]) / 2
+					self.text.raw_anchor = anchor
 		else:
 			# First frame unhover: unenlarge text
-			if self.enlarged:
-				self.enlarged = False
+			if self._enlarged:
+				self._enlarged = False
 
 				#* Automatically centers text when enlarging
 				# First get previous dimensions
@@ -137,14 +148,26 @@ class TextButton:
 				self.text.font_size -= self.hover_enlarge
 
 				# Use new dimensions to find difference to recenter
-				self.text.anchor_x += (self.text.content_width - prev[0]) / 2
-				self.text.anchor_y += (self.text.content_height - prev[1]) / 2
-				self.text._calc_anchor_pos(self.text._anchor)
+				if isinstance(self.text.raw_anchor[0], str):
+					# Store the previous dynamic anchor to set
+					#	because adding to anchor x makes anchor static
+					anchor = self.text.raw_anchor
+					self.text.anchor_x += (self.text.content_width - prev[0]) / 2
+					self.text.raw_anchor = anchor
+					
+				if isinstance(self.text.raw_anchor[1], str):
+					# Store the previous dynamic anchor to set
+					#	because adding to anchor x makes anchor static
+					anchor = self.text.raw_anchor
+					self.text.anchor_y += (self.text.content_height - prev[1]) / 2
+					self.text.raw_anchor = anchor
 
 	def on_mouse_press(self,
 			x: int, y: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.button.enabled:
+			return
 		self.button.on_mouse_press(x, y, buttons, modifiers)
 		self._enlarge()
 
@@ -152,6 +175,8 @@ class TextButton:
 			x: int, y: int,
 			dx: int, dy: int
 	) -> None:
+		if not self.button.enabled:
+			return
 		self.button.on_mouse_motion(x, y, dx, dy)
 		self._enlarge()
 
@@ -159,6 +184,8 @@ class TextButton:
 			x: int, y: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.button.enabled:
+			return
 		self.button.on_mouse_release(x, y, buttons, modifiers)
 		self._enlarge()
 
@@ -166,8 +193,16 @@ class TextButton:
 			x: int, y: int, dx: int, dy: int,
 			buttons: int, modifiers: int
 	) -> None:
+		if not self.button.enabled:
+			return
 		self.button.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._enlarge()
+
+	def enable(self) -> None:
+		self.button.enable()
+
+	def disable(self) -> None:
+		self.button.disable()
 
 	@property # type: ignore[override]
 	def x(self) -> float:
@@ -239,7 +274,7 @@ class TextButton:
 		return self.button.anchor
 	@anchor.setter
 	def anchor(self, val: Anchor) -> None:
-		self.button.anchor = self.text.anchor = val
+		self.anchor_x, self.anchor_y = val
 		self._enlarge()
 
 	@property
@@ -256,7 +291,7 @@ class TextButton:
 	@hover_enlarge.setter
 	def hover_enlarge(self, size: int) -> None:
 		# If need to be resized and synced
-		if self.enlarged:
+		if self._enlarged:
 			#* Trick: Can unhover and rehover button to make changes automatically.
 			#	This way, no copy pasting code needed.
 			#	Because status is being manually set instead of in Button._update_status,
@@ -269,3 +304,7 @@ class TextButton:
 
 		else:
 			self._hover_enlarge = size
+
+	@property
+	def enabled(self) -> bool:
+		return self.button.enabled

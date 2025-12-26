@@ -1,5 +1,3 @@
-# type: ignore
-
 import pyglet
 from src.sprite import SpriteSheet
 
