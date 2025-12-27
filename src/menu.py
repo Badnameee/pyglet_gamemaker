@@ -23,7 +23,7 @@ class Menu(Scene, ABC):
 	Dispatches: Refer to `gui.Scene`
 	"""
 
-	widget_pos: dict[str, tuple[float, float]]
+	WIDGET_POS: dict[str, tuple[float, float]]
 	"""Stores the position of every widget as a scale {id: (scale_x, scale_y)}.
 
 	Ex. `'Test': (0.5, 0.5)` is the center of the window.
@@ -55,7 +55,6 @@ class Menu(Scene, ABC):
 
 		super().__init__(name, window, **kwargs)
 
-		self.widget_pos = {}
 		self.widgets = {}
 		
 		self.batch = Batch()
@@ -105,8 +104,8 @@ class Menu(Scene, ABC):
 		
 		self.widgets[widget_name] = text_obj = Text(
 			text,
-			self.widget_pos[widget_name][0] * self.window.width,
-			self.widget_pos[widget_name][1] * self.window.width,
+			self.WIDGET_POS[widget_name][0] * self.window.width,
+			self.WIDGET_POS[widget_name][1] * self.window.width,
 			self.batch, self.text_group,
 			anchor_pos,
 			font_info,
@@ -141,8 +140,8 @@ class Menu(Scene, ABC):
 
 		self.widgets[widget_name] = button = Button(
 			widget_name,
-			self.widget_pos[widget_name][0] * self.window.width,
-			self.widget_pos[widget_name][1] * self.window.height,
+			self.WIDGET_POS[widget_name][0] * self.window.width,
+			self.WIDGET_POS[widget_name][1] * self.window.height,
 			image_sheet, image_start,
 			self.window, self.batch, self.button_group,
 			anchor, attach_events=attach_events, **kwargs
@@ -194,8 +193,8 @@ class Menu(Scene, ABC):
 
 		self.widgets[widget_name] = text_button = TextButton(
 			widget_name, text,
-			self.widget_pos[widget_name][0] * self.window.width,
-			self.widget_pos[widget_name][1] * self.window.width,
+			self.WIDGET_POS[widget_name][0] * self.window.width,
+			self.WIDGET_POS[widget_name][1] * self.window.width,
 			self.window, self.batch, self.button_group, self.text_group,
 			image_sheet, image_start,
 			button_anchor, text_anchor,
