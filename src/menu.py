@@ -23,12 +23,12 @@ class Menu(Scene, ABC):
 	Dispatches: Refer to `gui.Scene`
 	"""
 
-	widget_pos: dict[str, tuple[float, float]] = {}
+	WIDGET_POS: dict[str, tuple[float, float]]
 	"""Stores the position of every widget as a scale {id: (scale_x, scale_y)}.
 
 	Ex. `'Test': (0.5, 0.5)` is the center of the window.
 	"""
-	widgets: dict[str, Text | Button | TextButton] = {}
+	widgets: dict[str, Text | Button | TextButton]
 	"""Stores all widgets in the menu"""
 
 	bg_group: Group
@@ -54,6 +54,8 @@ class Menu(Scene, ABC):
 		"""
 
 		super().__init__(name, window, **kwargs)
+
+		self.widgets = {}
 		
 		self.batch = Batch()
 		self.bg_group = Group(0)
@@ -100,16 +102,16 @@ class Menu(Scene, ABC):
 		if font_info == (None, None):
 			font_info = self.default_font_info
 		
-		self.widgets[widget_name] = text = Text(
+		self.widgets[widget_name] = text_obj = Text(
 			text,
-			self.widget_pos[widget_name][0] * self.window.width,
-			self.widget_pos[widget_name][1] * self.window.width,
+			self.WIDGET_POS[widget_name][0] * self.window.width,
+			self.WIDGET_POS[widget_name][1] * self.window.width,
 			self.batch, self.text_group,
 			anchor_pos,
 			font_info,
 			color
 		)
-		text.disable()
+		text_obj.disable()
 	
 	def create_button(self,
 			widget_name: str,
@@ -138,8 +140,8 @@ class Menu(Scene, ABC):
 
 		self.widgets[widget_name] = button = Button(
 			widget_name,
-			self.widget_pos[widget_name][0] * self.window.width,
-			self.widget_pos[widget_name][1] * self.window.height,
+			self.WIDGET_POS[widget_name][0] * self.window.width,
+			self.WIDGET_POS[widget_name][1] * self.window.height,
 			image_sheet, image_start,
 			self.window, self.batch, self.button_group,
 			anchor, attach_events=attach_events, **kwargs
@@ -191,8 +193,8 @@ class Menu(Scene, ABC):
 
 		self.widgets[widget_name] = text_button = TextButton(
 			widget_name, text,
-			self.widget_pos[widget_name][0] * self.window.width,
-			self.widget_pos[widget_name][1] * self.window.width,
+			self.WIDGET_POS[widget_name][0] * self.window.width,
+			self.WIDGET_POS[widget_name][1] * self.window.width,
 			self.window, self.batch, self.button_group, self.text_group,
 			image_sheet, image_start,
 			button_anchor, text_anchor,
