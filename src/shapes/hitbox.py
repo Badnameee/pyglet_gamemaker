@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Literal, Self, NoReturn
+from typing import Literal, Self
 import math
 
 import pyglet
@@ -12,16 +12,13 @@ from ..types import *
 class Hitbox:
 	"""Store a convex hitbox that uses SAT (Separating Axis Theorem) method for collision.
 
-	Can use `from_rect` to get coords for rectangle or `from_circle` for a circle hitbox
-	(coords are not accurate but optimized for collisions)
+	Can use `from_rect` to get coords for rectangle.
+	Use `hitbox.HitboxCircle` for circle collisions.
 
-	For _coord vars, there are 3 types of transformation
-	
+	For _coord vars (ex. `_local_coords`), there are 3 types of transformation
 	- translated: Adding global position of hitbox to local position (moving in 2D space)
-	
 	- rotated: Adding the rotation of the hitbox
-	
-	- anchored, shifting global position to account for anchor position of hitbox
+	- anchored: Shifting global position to account for anchor position of hitbox
 	"""
 
 	_local_coords: tuple[Point2D, ...] = tuple()
@@ -42,7 +39,7 @@ class Hitbox:
 	_trans_pos: Point2D
 	"""Holds the translation amount from (0, 0)"""
 	subtype: str | None
-	"""Subtype ('rect', 'circle') of hitbox"""
+	"""Subtype (ex. 'rect') of hitbox"""
 
 	def __init__(self,
 			coords: tuple[Point2D, ...],
@@ -55,7 +52,8 @@ class Hitbox:
 			coords (tuple[Point2D, ...]):
 				The coordinates of the hitbox
 			anchor_pos (Point2D, optional):
-				The starting anchor position. Defaults to (0, 0).
+				The starting anchor position.
+				Defaults to (0, 0).
 		"""
 
 		if len(coords) < 2:
@@ -154,7 +152,7 @@ class Hitbox:
 		"""Checks if two lines intersect (for SAT).
 
 		Returns:
-			bool: Whether lines intersect
+			bool: If True, lines intersect
 		"""
 
 		# Left of line1 inside line2
@@ -202,7 +200,7 @@ class Hitbox:
 		"""Checks if one of the lines in completely contained inside the other (for SAT)
 
 		Returns:
-			bool: Whether one of the lines is completely contained within other line
+			bool: If True, one of the lines is completely contained within other line
 		"""
 		return (l1[0] < l2[0] and l1[1] > l2[1]) or (l2[0] < l1[0] and l2[1] > l1[1])
 	
@@ -219,8 +217,8 @@ class Hitbox:
 			other (Hitbox | HitboxRender | HitboxRenderCircle):
 				The other hitbox to detect collision with
 			sacrifice_MTV (bool, optional):
-				Whether to optimize speed in
-				exchange for no MTV. Defaults to False.
+				If True, optimize speed in exchange for no MTV.
+				Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
@@ -273,8 +271,8 @@ class Hitbox:
 			others (list[Hitbox | HitboxRender | HitboxRenderCircle]):
 				List of others to check collision with self
 			sacrifice_MTV (bool, optional):
-				Whether to optimize speed in
-				exchange for no MTV. Defaults to False.
+				If True, optimize speed in exchange for no MTV.
+				Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
@@ -376,13 +374,15 @@ class Hitbox:
 
 		Args:
 			x (float | None, optional):
-				New x. Defaults to None.
+				New x.
+				Defaults to None.
 			y (float | None, optional):
-				New y. Defaults to None.
+				New y.
+				Defaults to None.
 		"""
 		x = x if x is not None else self._trans_pos[0]
 		y = y if y is not None else self._trans_pos[1]
-		self._trans_pos = x, y		
+		self._trans_pos = x, y
 		self._calc_coords()
 
 	@property
@@ -447,7 +447,8 @@ class HitboxCircle(Hitbox):
 			radius (float):
 				The radius of the circle
 			anchor_pos (Point2D, optional):
-				The anchor position. Defaults to (0, 0).
+				The anchor position.
+				Defaults to (0, 0).
 		"""
 		super().__init__(((x, y), (radius, 0)), anchor_pos, _subtype='circle')
 		self.axis = Vec2(0, 0)
@@ -553,9 +554,11 @@ class HitboxCircle(Hitbox):
 
 		Args:
 			x (float | None, optional):
-				New x. Defaults to None.
+				New x.
+				Defaults to None.
 			y (float | None, optional):
-				New y. Defaults to None.
+				New y.
+				Defaults to None.
 		"""
 		x = x if x is not None else self._trans_pos[0]
 		y = y if y is not None else self._trans_pos[1]
@@ -582,9 +585,13 @@ class HitboxRender:
 	"""Holds a Hitbox with `hitbox` and `render` objects"""
 
 	_hitbox_color: Color
+
 	hitbox: Hitbox
+	"""The hitbox object"""
 	render: Polygon
+	"""The render object"""
 	subtype: str | None
+	"""Subtype (ex. 'rect') of hitbox"""
 
 	def __init__(self,
 			coords: tuple[Point2D, ...],
@@ -604,11 +611,14 @@ class HitboxRender:
 			group (Group):
 				The group for rendering
 			anchor_pos (Point2D, optional):
-				The starting anchor position. Defaults to (0, 0).
+				The starting anchor position.
+				Defaults to (0, 0).
 			circle (bool, optional):
-				Whether hitbox is a circle (for SAT). Defaults to False.
+				If True, hitbox is a circle (for SAT).
+				Defaults to False.
 			rect (bool, optional):
-				Whether hitbox is a rectangle (for SAT). Defaults to False.
+				If True, hitbox is a rectangle (for SAT).
+				Defaults to False.
 		"""
 		self.render = Polygon(*coords, color=color.value, batch=batch, group=group)
 		self.hitbox = Hitbox(coords, anchor_pos, _subtype=subtype)
@@ -666,8 +676,8 @@ class HitboxRender:
 			other (Hitbox | HitboxRender | HitboxRenderCircle):
 				The other hitbox to detect collision with
 			sacrifice_MTV (bool, optional):
-				Whether to optimize speed in
-				exchange for no MTV. Defaults to False.
+				If True, optimize speed in exchange for no MTV.
+				Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
@@ -685,8 +695,8 @@ class HitboxRender:
 			others (list[Hitbox | HitboxRender | HitboxRenderCircle]):
 				List of others to check collision with self
 			sacrifice_MTV (bool, optional):
-				Whether to optimize speed in
-				exchange for no MTV. Defaults to False.
+				If True, optimize speed in exchange for no MTV.
+				Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
@@ -705,13 +715,15 @@ class HitboxRender:
 	
 	def move_to(self, x: float | None=None, y: float | None=None) -> None:
 		"""Move the hitbox to a location based on anchor.
-		Setting argument to None (default) will not change that axis pos.
+		Passing nothing will leave axis unchanged.
 
 		Args:
 			x (float | None, optional):
-				New x. Defaults to None.
+				New x.
+				Defaults to None.
 			y (float | None, optional):
-				New y. Defaults to None.
+				New y.
+				Defaults to None.
 		"""
 		x = x if x is not None else self.hitbox._trans_pos[0]
 		y = y if y is not None else self.hitbox._trans_pos[1]
@@ -768,9 +780,13 @@ class HitboxRenderCircle:
 	"""Holds a Circle Hitbox with `hitbox` and `render` objects"""
 
 	_hitbox_color: Color
+
 	hitbox: HitboxCircle
+	"""The hitbox object"""
 	render: Circle
+	"""The render object"""
 	subtype: str | None
+	"""Subtype (ex. 'rect') of hitbox"""
 	
 	def __init__(self,
 			x: float, y: float, radius: float,
@@ -793,7 +809,8 @@ class HitboxRenderCircle:
 			group (Group):
 				The group for rendering
 			anchor_pos (Point2D, optional):
-				The anchor position. Defaults to (0, 0).
+				The anchor position.
+				Defaults to (0, 0).
 		"""
 		self.render = Circle(x, y, radius, color=color.value, batch=batch, group=group)
 		self.hitbox = HitboxCircle(x, y, radius, anchor_pos)
@@ -814,8 +831,8 @@ class HitboxRenderCircle:
 			other (Hitbox | HitboxRender | HitboxRenderCircle):
 				The other hitbox to detect collision with
 			sacrifice_MTV (bool, optional):
-				Whether to optimize speed in
-				exchange for no MTV. Defaults to False.
+				If True, optimize speed in exchange for no MTV.
+				Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
@@ -833,8 +850,8 @@ class HitboxRenderCircle:
 			others (list[Hitbox | HitboxRender | HitboxRenderCircle]):
 				List of others to check collision with self
 			sacrifice_MTV (bool, optional):
-				Whether to optimize speed in
-				exchange for no MTV. Defaults to False.
+				If True, optimize speed in exchange for no MTV.
+				Defaults to False.
 
 		Returns:
 			tuple[Literal[False], None] | tuple[Literal[True], Vec2]: Whether
@@ -852,9 +869,11 @@ class HitboxRenderCircle:
 
 		Args:
 			x (float | None, optional):
-				New x. Defaults to None.
+				New x.
+				Defaults to None.
 			y (float | None, optional):
-				New y. Defaults to None.
+				New y.
+				Defaults to None.
 		"""
 		x = x if x is not None else self.hitbox._trans_pos[0]
 		y = y if y is not None else self.hitbox._trans_pos[1]
