@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import SupportsIndex
 
 import pyglet
 from pyglet.image import TextureRegion, ImageGrid, TextureGrid, AbstractImage
@@ -7,7 +8,7 @@ class SpriteSheet:
 	"""An object holding a rectangular sheet of common sprites.
 	
 	Index to get portion of image to render.
-	Allows indexing by name using :py:meth:`.name`
+	Allows indexing by name using `name(...)`
 	"""
 
 	img: AbstractImage
@@ -33,7 +34,12 @@ class SpriteSheet:
 		self.grid = TextureGrid(self.image_grid) # For efficient rendering, make it all one texture
 
 	def name(self, *args: str) -> None:
-		"""Name all of the grid parts instead of indexing with numbers"""
+		"""Name all of the grid parts instead of indexing with numbers
+		
+		Args:
+			*args (str):
+				The names of the grid parts. Must be in same order as regular indexing.
+		"""
 
 		# Must be same number of names as parts of the grid
 		if len(args) != len(self.grid):
@@ -42,7 +48,7 @@ class SpriteSheet:
 		# Add all to lookup table
 		self.lookup = {name: i for i, name in enumerate(args)}
 
-	def __getitem__(self, index: str | int | slice) -> TextureRegion | list[TextureRegion]:
+	def __getitem__(self, index: str | int | slice[SupportsIndex | None, SupportsIndex | None, SupportsIndex | None]) -> TextureRegion | list[TextureRegion]:
 		# Slice and int can be directly used
 		if isinstance(index, slice | int):
 			return self.grid[index]
