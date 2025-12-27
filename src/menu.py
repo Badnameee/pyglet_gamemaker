@@ -23,12 +23,12 @@ class Menu(Scene, ABC):
 	Dispatches: Refer to `gui.Scene`
 	"""
 
-	widget_pos: dict[str, tuple[float, float]] = {}
+	widget_pos: dict[str, tuple[float, float]]
 	"""Stores the position of every widget as a scale {id: (scale_x, scale_y)}.
 
 	Ex. `'Test': (0.5, 0.5)` is the center of the window.
 	"""
-	widgets: dict[str, Text | Button | TextButton] = {}
+	widgets: dict[str, Text | Button | TextButton]
 	"""Stores all widgets in the menu"""
 
 	bg_group: Group
@@ -54,6 +54,9 @@ class Menu(Scene, ABC):
 		"""
 
 		super().__init__(name, window, **kwargs)
+
+		self.widget_pos = {}
+		self.widgets = {}
 		
 		self.batch = Batch()
 		self.bg_group = Group(0)

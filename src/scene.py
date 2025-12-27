@@ -21,7 +21,7 @@ class Scene(ABC, EventDispatcher):
 	Use kwargs to attach event handlers.
 	"""
 	
-	event_handlers: dict[str, Callable] = {}
+	event_handlers: dict[str, Callable]
 	"""All manually attached event handlers for this scene.
 	
 	**Do not modify**; use `add_event_handlers` and `remove_event_handlers` instead.
@@ -45,8 +45,9 @@ class Scene(ABC, EventDispatcher):
 			**kwargs:
 				Event handlers to attach (name=func)
 		"""
+		self.event_handlers = {}
 		self.name, self.window = name, window
-		
+
 		# Adds any event handlers passed through kwargs
 		self.add_event_handlers(**kwargs)
 		
