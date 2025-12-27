@@ -13,11 +13,18 @@ class Scene(ABC, EventDispatcher):
 	
 	Dispatches:
 	- 'on_scene_change' (to window) when program wishes to switch scenes.
+		- Arg: Name of new scene to switch to
 
 	`enable` and `disable` run from `Window` class when enabling and disabling scene.
 	These enable and disable the scene, but not rendering. This happens in `Window`.
 
 	Use kwargs to attach event handlers.
+	"""
+	
+	event_handlers: dict[str, Callable] = {}
+	"""All manually attached event handlers for this scene.
+	
+	**Do not modify**; use `add_event_handlers` and `remove_event_handlers` instead.
 	"""
 
 	batch: Batch
@@ -26,7 +33,6 @@ class Scene(ABC, EventDispatcher):
 	"""The name of the scene"""
 	window: Window
 	"""Window scene is a part of"""
-	event_handlers: dict[str, Callable] = {}
 
 	def __init__(self, name: str, window: Window, **kwargs) -> None:
 		"""Create a scene.
@@ -42,15 +48,27 @@ class Scene(ABC, EventDispatcher):
 		self.name, self.window = name, window
 		
 		# Adds any event handlers passed through kwargs
-		self.add_events(**kwargs)
+		self.add_event_handlers(**kwargs)
 		
-	def add_events(self, **kwargs: Callable) -> None:
+	def add_event_handlers(self, **kwargs: Callable) -> None:
+		"""Add event handlers to this scene.
+		
+		Args:
+			**kwargs (Callable):
+				Name-function pair(s) representing handlers
+		"""
 		for name, handler in kwargs.items():
 			self.event_handlers[name] = handler
 			self.register_event_type(name)
 		self.push_handlers(**kwargs)
 
-	def remove_events(self, *args: str) -> None:
+	def remove_event_handlers(self, *args: str) -> None:
+		"""Remove event handlers from this scene.
+		
+		Args:
+			*args (name):
+				Names of handler(s) to remove
+		"""
 		for name in args:
 			self.remove_handler(name, self.event_handlers.pop(name))
 
