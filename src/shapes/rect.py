@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 from pyglet.graphics import Batch, Group
 from ..types import *
