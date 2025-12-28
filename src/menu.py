@@ -7,6 +7,7 @@ from .scene import Scene
 from .types import *
 from .shapes import Rect
 from .gui import *
+
 if TYPE_CHECKING:
 	from .sprite import SpriteSheet
 
@@ -18,7 +19,7 @@ class Menu(Scene, ABC):
 	- `bg_group`, `button_group`, and `text_group`
 
 	`default_font_info` stores default font info for widgets.
-	
+
 	Dispatches: Refer to `gui.Scene`
 	"""
 
@@ -55,12 +56,12 @@ class Menu(Scene, ABC):
 		super().__init__(name, window, **kwargs)
 
 		self.widgets = {}
-		
+
 		self.batch = Batch()
 		self.bg_group = Group(0)
 		self.button_group = Group(1)
 		self.text_group = Group(2)
-	
+
 	def create_bg(self, color: Color) -> None:
 		"""Create a solid background for the menu.
 
@@ -69,15 +70,22 @@ class Menu(Scene, ABC):
 				The color of the background.
 		"""
 		self.bg = Rect(
-			0, 0, self.window.width, self.window.height,
-			color, self.batch, self.bg_group
+			0,
+			0,
+			self.window.width,
+			self.window.height,
+			color,
+			self.batch,
+			self.bg_group,
 		)
 
-	def create_text(self,
-			widget_name: str, text: str,
-			anchor_pos: Anchor=(0, 0),
-			font_info: FontInfo=(None, None),
-			color: Color=Color.WHITE,
+	def create_text(
+		self,
+		widget_name: str,
+		text: str,
+		anchor_pos: Anchor = (0, 0),
+		font_info: FontInfo = (None, None),
+		color: Color = Color.WHITE,
 	) -> None:
 		"""Create a text widget.
 
@@ -96,28 +104,32 @@ class Menu(Scene, ABC):
 				Color of text.
 				Defaults to Color.WHITE.
 		"""
-		
+
 		# Use default if none provided
 		if font_info == (None, None):
 			font_info = self.default_font_info
-		
+
 		self.widgets[widget_name] = text_obj = Text(
 			text,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
 			self.WIDGET_POS[widget_name][1] * self.window.width,
-			self.batch, self.text_group,
+			self.batch,
+			self.text_group,
 			anchor_pos,
 			font_info,
-			color
+			color,
 		)
 		text_obj.disable()
-	
-	def create_button(self,
-			widget_name: str,
-			image_sheet: SpriteSheet, image_start: str | int,
-			anchor: Anchor=(0, 0),
-			*, attach_events: bool=True,
-			**kwargs
+
+	def create_button(
+		self,
+		widget_name: str,
+		image_sheet: SpriteSheet,
+		image_start: str | int,
+		anchor: Anchor = (0, 0),
+		*,
+		attach_events: bool = True,
+		**kwargs,
 	) -> None:
 		"""Create a button widget.
 
@@ -141,20 +153,29 @@ class Menu(Scene, ABC):
 			widget_name,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
 			self.WIDGET_POS[widget_name][1] * self.window.height,
-			image_sheet, image_start,
-			self.window, self.batch, self.button_group,
-			anchor, attach_events=attach_events, **kwargs
+			image_sheet,
+			image_start,
+			self.window,
+			self.batch,
+			self.button_group,
+			anchor,
+			attach_events=attach_events,
+			**kwargs,
 		)
 		button.disable()
 
-	def create_text_button(self,
-			widget_name: str, text: str,
-			image_sheet: SpriteSheet, image_start: str | int,
-			button_anchor: Anchor=(0, 0),
-			text_anchor: Anchor=(0, 0),
-			font_info: FontInfo=(None, None),
-			color: Color=Color.WHITE,
-			hover_enlarge: int=0, **kwargs
+	def create_text_button(
+		self,
+		widget_name: str,
+		text: str,
+		image_sheet: SpriteSheet,
+		image_start: str | int,
+		button_anchor: Anchor = (0, 0),
+		text_anchor: Anchor = (0, 0),
+		font_info: FontInfo = (None, None),
+		color: Color = Color.WHITE,
+		hover_enlarge: int = 0,
+		**kwargs,
 	) -> None:
 		"""Create a text button widget.
 
@@ -185,19 +206,27 @@ class Menu(Scene, ABC):
 			kwargs:
 				Event handlers (name=func)
 		"""
-		
+
 		# Use default if none provided
 		if font_info == (None, None):
 			font_info = self.default_font_info
 
 		self.widgets[widget_name] = text_button = TextButton(
-			widget_name, text,
+			widget_name,
+			text,
 			self.WIDGET_POS[widget_name][0] * self.window.width,
 			self.WIDGET_POS[widget_name][1] * self.window.width,
-			self.window, self.batch, self.button_group, self.text_group,
-			image_sheet, image_start,
-			button_anchor, text_anchor,
-			font_info, color, hover_enlarge,
-			**kwargs
+			self.window,
+			self.batch,
+			self.button_group,
+			self.text_group,
+			image_sheet,
+			image_start,
+			button_anchor,
+			text_anchor,
+			font_info,
+			color,
+			hover_enlarge,
+			**kwargs,
 		)
 		text_button.disable()

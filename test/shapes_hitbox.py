@@ -1,5 +1,3 @@
-import math
-
 import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
@@ -17,10 +15,12 @@ circle.render.visible = False
 
 mode = 'rect'
 
+
 @window.event
 def on_mouse_motion(x, y, dx, dy):
 	hitbox.move_to(x, y)
 	circle.move_to(x, y)
+
 
 @window.event
 def on_key_press(symbol, modifiers):
@@ -54,6 +54,7 @@ def on_key_press(symbol, modifiers):
 			hitbox.render.visible = False
 			circle.render.visible = True
 
+
 def update(dt):
 	if mode == 'rect':
 		if hitbox.collide(hitbox2)[0]:
@@ -66,10 +67,12 @@ def update(dt):
 		else:
 			circle.render.opacity = 255
 
+
 @window.event
 def on_draw():
 	window.clear()
 	batch.draw()
 
-pyglet.clock.schedule_interval(update, 1/60)
+
+pyglet.clock.schedule_interval(update, 1 / 60)
 pyglet.app.run()

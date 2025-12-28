@@ -2,13 +2,14 @@ from typing import TYPE_CHECKING
 
 import pyglet
 from pyglet.window import Window as PygletWin
+
 if TYPE_CHECKING:
 	from .scene import Scene
 
 
 class Window(PygletWin):
 	"""The main window that stores the scenes and runs the game.
-	
+
 	Add scenes using `add_scene` and use `start()` to run the game.
 	"""
 
@@ -20,10 +21,8 @@ class Window(PygletWin):
 	centered: bool
 	"""If True, the window is centered. Do not set."""
 
-	def __init__(self,
-			window_dim: tuple[int, int],
-			center_window: bool=True,
-			**kwargs
+	def __init__(
+		self, window_dim: tuple[int, int], center_window: bool = True, **kwargs
 	) -> None:
 		"""Create a Window object.
 
@@ -39,17 +38,17 @@ class Window(PygletWin):
 				https://pyglet.readthedocs.io/en/latest/programming_guide/windowing.html
 				for more.
 		"""
-		super().__init__(*window_dim, **kwargs) # type: ignore[call-arg]
+		super().__init__(*window_dim, **kwargs)  # type: ignore[call-arg]
 
 		# Center if requested
 		self.centered = center_window
 		if center_window:
 			self.set_location(
 				(self.screen.width - window_dim[0]) // 2,
-				(self.screen.height - window_dim[1]) // 2
+				(self.screen.height - window_dim[1]) // 2,
 			)
 
-	def start(self, start_scene: str | None=None) -> None:
+	def start(self, start_scene: str | None = None) -> None:
 		"""Start the game
 
 		Args:
@@ -59,11 +58,11 @@ class Window(PygletWin):
 		"""
 		if not self.scenes:
 			raise RuntimeError('Window.scenes must have at least 1 scene!')
-		
+
 		# Set start scene if needed
 		if start_scene:
 			self.scene = start_scene
-		
+
 		# Enable beginning scene
 		self.scenes[self.scene].enable()
 

@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from ..types import *
 from pyglet.text import Label
+
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
@@ -9,20 +10,22 @@ if TYPE_CHECKING:
 class Text(Label):
 	"""A 2D label with scrolling and custom anchor support.
 	Supports anchoring with specific pixel values or dynamic.
-	
+
 	Dynamic Anchors:
 	- `AnchorX`: 'left', 'center', 'right'
 	- `AnchorY`: 'bottom', 'center', 'top'
 
 	Does not support rotating around anchor point (rotates about bottomleft)
-	
+
 	Use kwargs to attach event handlers.
 	"""
 
 	CONVERT_DYNAMIC: dict[AnchorX | AnchorY, float] = {
-		'left': 0, 'bottom': 0,
+		'left': 0,
+		'bottom': 0,
 		'center': 0.5,
-		'right': 1, 'top': 1,
+		'right': 1,
+		'top': 1,
 	}
 	"""Converts dynamic anchor to multiplier"""
 
@@ -38,13 +41,16 @@ class Text(Label):
 	raw_anchor: Anchor = 0, 0
 	"""Holds the raw anchor position (static + dynamic)"""
 
-	def __init__(self,
-			text: str,
-			x: float, y: float,
-			batch: Batch, group: Group,
-			anchor: Anchor=(0, 0),
-			font_info: FontInfo=(None, None),
-			color: Color=Color.WHITE,
+	def __init__(
+		self,
+		text: str,
+		x: float,
+		y: float,
+		batch: Batch,
+		group: Group,
+		anchor: Anchor = (0, 0),
+		font_info: FontInfo = (None, None),
+		color: Color = Color.WHITE,
 	) -> None:
 		"""Create a text label.
 
@@ -71,10 +77,15 @@ class Text(Label):
 		"""
 
 		super().__init__(
-			text, x, y, 0,
-			font_name=font_info[0], font_size=font_info[1],
+			text,
+			x,
+			y,
+			0,
+			font_name=font_info[0],
+			font_size=font_info[1],
 			color=color.value,
-			batch=batch, group=group
+			batch=batch,
+			group=group,
 		)
 
 		self.anchor = anchor
@@ -94,7 +105,7 @@ class Text(Label):
 	def reset(self) -> None:
 		"""Reset text to initial state"""
 		self.pos = self.start_pos
-		self.font_name, self.font_size = self.font_info # type: ignore[assignment]
+		self.font_name, self.font_size = self.font_info  # type: ignore[assignment]
 
 	def _calc_anchor_pos(self, val: Anchor) -> None:
 		"""Calculate a new anchor position and sync position"""
@@ -103,15 +114,15 @@ class Text(Label):
 			(
 				# Convert if AnchorX, else use raw int value
 				self.CONVERT_DYNAMIC[val[0]] * self.content_width
-				if isinstance(val[0], str) else
-				val[0]
+				if isinstance(val[0], str)
+				else val[0]
 			),
 			(
 				# Convert if AnchorY, else use raw int value
 				self.CONVERT_DYNAMIC[val[1]] * self.content_height
-				if isinstance(val[1], str) else
-				val[1]
-			)
+				if isinstance(val[1], str)
+				else val[1]
+			),
 		)
 		# Refresh position
 		self.pos = self.pos
@@ -124,6 +135,7 @@ class Text(Label):
 	def text(self) -> str:
 		"""The text string"""
 		return self._text
+
 	@text.setter
 	def text(self, txt: str | int) -> None:
 		self.document.text = self._text = str(txt)
@@ -132,10 +144,11 @@ class Text(Label):
 	@property
 	def x(self) -> float:
 		"""*Anchored*, but *unrotated* x position of text.
-		
+
 		To set both `.x` and `.y`, use `.pos =`
 		"""
 		return self.pos[0]
+
 	@x.setter
 	def x(self, val: float) -> None:
 		self._pos = val, self._pos[1]
@@ -144,50 +157,56 @@ class Text(Label):
 	@property
 	def y(self) -> float:
 		"""*Anchored*, but *unrotated* y position of text.
-		
+
 		To set both `.x` and `.y`, use `.pos =`
 		"""
 		return self._pos[1]
+
 	@y.setter
 	def y(self, val: float) -> None:
 		self._pos = self._pos[0], val
-		self._set_y(val - self._anchor[1] - self._descent) # Fixes y not centering
+		self._set_y(val - self._anchor[1] - self._descent)  # Fixes y not centering
 
 	@property
 	def pos(self) -> Point2D:
 		"""*Anchored*, but *unrotated* position of text"""
 		return self._pos
+
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
 		self._pos = val
-		self._set_position((
-			val[0] - self._anchor[0],
-			val[1] - self._anchor[1] - self._descent, # Fixes y not centering
-			self._z
-		))
+		self._set_position(
+			(
+				val[0] - self._anchor[0],
+				val[1] - self._anchor[1] - self._descent,  # Fixes y not centering
+				self._z,
+			)
+		)
 
-	@property # type: ignore[override]
+	@property  # type: ignore[override]
 	def anchor_x(self) -> float:
 		"""The x anchor of the text, in px.
 
 		Can be set in px or dynamic.
-		
+
 		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
 		"""
 		return self._anchor[0]
+
 	@anchor_x.setter
 	def anchor_x(self, val: AnchorX) -> None:
 		self._calc_anchor_pos((val, self._anchor[1]))
 
-	@property # type: ignore[override]
+	@property  # type: ignore[override]
 	def anchor_y(self) -> float:
 		"""The y anchor of the text, in px.
 
 		Can be set in px or dynamic.
-		
+
 		To set both `.anchor_x` and `.anchor_y`, use `anchor =`
 		"""
 		return self._anchor[1]
+
 	@anchor_y.setter
 	def anchor_y(self, val: AnchorY) -> None:
 		self._calc_anchor_pos((self._anchor[0], val))
@@ -195,10 +214,11 @@ class Text(Label):
 	@property
 	def anchor(self) -> Point2D:
 		"""The anchor of the text, in px.
-		
+
 		Can be set in px or dynamic.
 		"""
 		return self._anchor
+
 	@anchor.setter
 	def anchor(self, val: Anchor) -> None:
 		self._calc_anchor_pos(val)

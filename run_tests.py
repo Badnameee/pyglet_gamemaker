@@ -9,19 +9,12 @@ tests = [
 	'shapes_hitbox',
 	'shapes_rect',
 	'menu',
-	'window'
+	'window',
 ]
 
 pyglet.resource.path = ['test']
 pyglet.resource.reindex()
 
 for test_num, test in enumerate(tests, 1):
-	print(
-		'\n'
-		'-----------------------------'
-		'\n'
-		f'Starting test #{test_num}: "{test}"'
-		'\n'
-		'\n'
-	)
-	exec(f'import test.{test}') # Run actual test
+	print(f'\n-----------------------------\nStarting test #{test_num}: "{test}"\n\n')
+	exec(f'import test.{test}')  # Run actual test

@@ -17,10 +17,14 @@ UI_group = Group()
 sheet = SpriteSheet('Default Button.png', 3, 1)
 sheet.name('Unpressed', 'Hover', 'Pressed')
 
+
 def on_half_click(button):
 	print(f'{button} pressed down on!')
+
+
 def on_full_click(button):
 	print(f'{button} fully pressed and releaased!')
+
 
 @window.event
 def on_key_press(symbol, modifiers):
@@ -49,21 +53,32 @@ def on_key_press(symbol, modifiers):
 	print(f'New button pos: {button.pos}')
 	button_anchor.position = button.pos
 
+
 @window.event
 def on_draw():
 	window.clear()
 	batch.draw()
 
+
 button = TextButton(
 	'Hi',
-	'This is text!', 320, 240,
-	window, batch, button_group, txt_group,
-	sheet, 0,
+	'This is text!',
+	320,
+	240,
+	window,
+	batch,
+	button_group,
+	txt_group,
+	sheet,
+	0,
 	('center', 'center'),
 	('center', 'center'),
 	font_info=('Arial', 30),
-	on_half_click=on_half_click, on_full_click=on_full_click
+	on_half_click=on_half_click,
+	on_full_click=on_full_click,
 )
-button_anchor = Circle(*button.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
+button_anchor = Circle(
+	*button.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group
+)
 
 pyglet.app.run()

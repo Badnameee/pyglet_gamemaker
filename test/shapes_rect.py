@@ -1,4 +1,3 @@
-
 import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
@@ -12,13 +11,14 @@ group = Group()
 rect = Rect(100, 100, 100, 50, Color.WHITE, batch, group)
 hitbox2 = HitboxRender.from_rect(300, 300, 100, 50, Color.RED, batch, group)
 
+
 @window.event
 def on_mouse_motion(x, y, dx, dy):
 	rect.pos = x, y
 
+
 @window.event
 def on_key_press(symbol, modifiers):
-
 	if symbol == key.A:
 		rect.anchor_x -= 10
 	elif symbol == key.D:
@@ -41,16 +41,19 @@ def on_key_press(symbol, modifiers):
 	elif symbol == key.K:
 		rect.height -= 10
 
+
 def update(dt):
 	if rect.collide(hitbox2)[0]:
 		rect.render.opacity = 128
 	else:
 		rect.render.opacity = 255
 
+
 @window.event
 def on_draw():
 	window.clear()
 	batch.draw()
 
-pyglet.clock.schedule_interval(update, 1/60)
+
+pyglet.clock.schedule_interval(update, 1 / 60)
 pyglet.app.run()
