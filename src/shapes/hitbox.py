@@ -43,8 +43,8 @@ class Hitbox:
 
 	def __init__(self,
 			coords: tuple[Point2D, ...],
-			anchor_pos: Point2D=(0, 0),
-			*, _subtype: str | None=None
+			anchor_pos: Point2D = (0, 0),
+			*, _subtype: str | None = None
 	) -> None:
 		"""Create a hitbox.
 
@@ -192,7 +192,7 @@ class Hitbox:
 				return -(l1[1] - l2[0])
 			return l2[1] - l1[0]
 		
-		#! Should only return 0 if no intersection, should never happen
+		#* Should only return 0 if no intersection, should never happen
 		return 0
 	
 	@staticmethod
@@ -473,7 +473,7 @@ class HitboxCircle(Hitbox):
 			sacrifice_MTV: bool=False
 	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
 		for rect in others:
-			if (collision_info:= self.collide(rect, sacrifice_MTV))[0]:
+			if (collision_info := self.collide(rect, sacrifice_MTV))[0]:
 				return collision_info
 		
 		return False, None
