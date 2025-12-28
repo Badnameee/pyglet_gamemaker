@@ -1,6 +1,36 @@
-[tool.mypy]
-python_version = "3.13"
+[build-system]
+requires = ["hatchling >= 1.27", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[[tool.mypy.overrides]]
-module = "test.*"
-ignore_errors = true
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "_version.py"
+
+[project]
+name = "pyglet-gamemaker"
+dynamic = ["version"]
+authors = [
+	{ name="Steven Robles", email="stevenrrobles13@gmail.com" }
+]
+description = "pyglet wrapper for making games."
+readme = "README.md"
+requires-python = ">=3.14"
+classifiers = [
+	"Programming Language :: Python :: 3.14",
+	"Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/Badnameee/pyglet-gamemaker"
+Issues = "https://github.com/Badnameee/pyglet-gamemaker/issues"
+
+[tool.mypy]
+python_version = "3.14"
+exclude = [
+	"^test/.*$",
+	"^run_tests\\.py$"
+]
