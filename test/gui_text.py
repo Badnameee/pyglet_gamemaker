@@ -58,6 +58,9 @@ txt = Text(
 	('center', 'center'), ('Arial', 50)
 )
 txt.start_pos = 320, 240
-txt_anchor = Circle(*txt.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
+txt_anchor = Circle(
+	*txt.pos, 10,
+	color=(0, 255, 255), batch=batch, group=UI_group
+)
 
 pyglet.app.run()

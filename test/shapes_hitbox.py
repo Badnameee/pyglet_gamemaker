@@ -1,5 +1,3 @@
-import math
-
 import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
@@ -12,7 +10,7 @@ group = Group()
 
 hitbox = HitboxRender.from_rect(100, 100, 100, 50, Color.WHITE, batch, group)
 hitbox2 = HitboxRender.from_rect(300, 300, 100, 50, Color.RED, batch, group)
-circle = HitboxRenderCircle(100, 100, 50, color=Color.WHITE, batch=batch, group=group)
+circle = HitboxRenderCircle(100, 100, 50, Color.WHITE, batch, group)
 circle.render.visible = False
 
 mode = 'rect'

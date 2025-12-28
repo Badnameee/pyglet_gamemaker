@@ -1,4 +1,3 @@
-import pyglet
 from src.window import Window
 from src.types import *
 from src.menu import Menu
@@ -12,7 +11,7 @@ class TestMenu(Menu):
 		'Test2': (0.5, 0.5),
 		'Test3': (0.7, 0.7)
 	}
-	
+
 	default_font_info = None, 40
 
 	def __init__(self, name, window, bg_color):

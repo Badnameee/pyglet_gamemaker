@@ -64,6 +64,9 @@ button = TextButton(
 	font_info=('Arial', 30),
 	on_half_click=on_half_click, on_full_click=on_full_click
 )
-button_anchor = Circle(*button.pos, 10, color=(0, 255, 255), batch=batch, group=UI_group)
+button_anchor = Circle(
+	*button.pos, 10,
+	color=(0, 255, 255), batch=batch, group=UI_group
+)
 
 pyglet.app.run()

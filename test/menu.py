@@ -12,7 +12,7 @@ class TestMenu(Menu):
 		'Test2': (0.5, 0.5),
 		'Test3': (0.7, 0.7)
 	}
-	
+
 	default_font_info = None, 40
 
 	def __init__(self, name, window, bg_color):
