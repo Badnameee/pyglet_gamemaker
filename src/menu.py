@@ -150,8 +150,7 @@ class Menu(Scene, ABC):
 		"""
 
 		self.widgets[widget_name] = button = Button(
-			widget_name,
-			self.WIDGET_POS[widget_name][0] * self.window.width,
+			widget_name, self.WIDGET_POS[widget_name][0] * self.window.width,
 			self.WIDGET_POS[widget_name][1] * self.window.height,
 			image_sheet,
 			image_start,
