@@ -1,5 +1,10 @@
+flake8==7.3.0
+mccabe==0.7.0
 mypy==1.18.2
 mypy_extensions==1.1.0
 pathspec==0.12.1
+pep8-naming==0.15.1
+pycodestyle==2.14.0
+pyflakes==3.4.0
 pyglet==2.1.10
 typing_extensions==4.15.0
