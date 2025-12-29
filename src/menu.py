@@ -1,5 +1,4 @@
-from __future__ import annotations
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from pyglet.window import Window
@@ -14,6 +13,11 @@ if TYPE_CHECKING:
 
 class Menu(Scene, ABC):
 	"""Abstract class for a Menu (a Scene with boilerplate). Inherit to create own menus.
+
+	Required Methods:
+	- `create_widgets`: To create all menu widgets and other logic (basically the init)
+	- `enable`: Enables scene (not rendering, just logic)
+	- `disable`: Disables scene (not rendering, just logic)
 
 	Creates its own batch so do not manually create. Also creates groups inside batch.
 	- `bg_group`, `button_group`, and `text_group`
@@ -43,17 +47,15 @@ class Menu(Scene, ABC):
 	default_font_info: FontInfo = None, None
 	"""The default font info is none is passed to gui functions"""
 
-	def __init__(self, name: str, window: Window, **kwargs) -> None:
+	def __init__(self, name: str, **kwargs) -> None:
 		"""Create a menu.
 
 		Args:
 			name (str):
 				The name of the scene (used to identity scene by name)
-			window (Window):
-				The window menu is on.
 		"""
 
-		super().__init__(name, window, **kwargs)
+		super().__init__(name, **kwargs)
 
 		self.widgets = {}
 		
@@ -61,6 +63,14 @@ class Menu(Scene, ABC):
 		self.bg_group = Group(0)
 		self.button_group = Group(1)
 		self.text_group = Group(2)
+
+	def set_window(self, window: Window) -> None:
+		super().set_window(window)
+		self.create_widgets()
+
+	@abstractmethod
+	def create_widgets(self) -> None:
+		"""Creates the widgets for the menu."""
 	
 	def create_bg(self, color: Color) -> None:
 		"""Create a solid background for the menu.
@@ -202,3 +212,9 @@ class Menu(Scene, ABC):
 			**kwargs
 		)
 		text_button.disable()
+
+	@abstractmethod
+	def enable(self) -> None: ...
+
+	@abstractmethod
+	def disable(self) -> None: ...
