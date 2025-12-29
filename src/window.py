@@ -48,8 +48,8 @@ class Window(PygletWin):
 				(self.screen.height - window_dim[1]) // 2,
 			)
 
-	def start(self, start_scene: str | None = None) -> None:
-		"""Start the game
+	def run(self, start_scene: str | None = None) -> None:
+		"""Run the game.
 
 		Args:
 			start_scene (str | None, optional):
