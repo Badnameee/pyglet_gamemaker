@@ -80,10 +80,13 @@ class Window(PygletWin):
 			obj (Scene): The Scene object
 		"""
 		self.scenes[name] = obj
+		obj.set_window(self)
 		obj.add_event_handlers(on_scene_change=self._on_scene_change)
+		obj.disable()
+
+		# Sets default scene
 		if self.scene == '':
 			self.scene = name
-		obj.disable()
 
 	def pop_scene(self, name: str) -> Scene:
 		"""Pop and return a scene from the game.
