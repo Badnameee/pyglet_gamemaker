@@ -10,14 +10,16 @@ class Scene(ABC, EventDispatcher):
 	"""Abstract class for a Scene in the game, inherit to create own scenes.
 	`Window` object should hold all scenes in window.scenes dictionary.
 
+	Required Methods:
+	- `create_widgets`: To create all menu widgets and other logic (basically the init)
+	- `enable`: Enables scene (not rendering, just logic)
+	- `disable`: Disables scene (not rendering, just logic)
+
 	When inheriting, a batch must be created for automatic rendering.
 
 	Dispatches:
 	- 'on_scene_change' (to window) when program wishes to switch scenes.
 		- Arg: Name of new scene to switch to
-
-	`enable` and `disable` run from `Window` class when enabling and disabling scene.
-	These enable and disable the scene, but not rendering. This happens in `Window`.
 
 	Use kwargs to attach event handlers.
 	"""
@@ -35,23 +37,30 @@ class Scene(ABC, EventDispatcher):
 	window: Window
 	"""Window scene is a part of"""
 
-	def __init__(self, name: str, window: Window, **kwargs) -> None:
+	def __init__(self, name: str, **kwargs) -> None:
 		"""Create a scene.
 
 		Args:
 			name (str):
 				The name of the scene (used to identity scene by name)
-			window (Window):
-				The screen window
 			**kwargs:
 				Event handlers to attach (name=func)
 		"""
 		self.event_handlers = {}
-		self.name, self.window = name, window
+		self.name = name
 
 		# Adds any event handlers passed through kwargs
 		self.add_event_handlers(**kwargs)
 
+	def set_window(self, window: Window) -> None:
+		"""Set the window the Scene will use.
+
+		Args:
+			window (Window):
+				The screen window
+		"""
+		self.window = window
+		
 	def add_event_handlers(self, **kwargs: Callable) -> None:
 		"""Add event handlers to this scene.
 
