@@ -89,7 +89,7 @@ class TextButton:
 				How much to enlarge text when hovered over.
 				Defaults to 0.
 			attach_events (bool, optional):
-				If False, don't push mouse event handlers to window.
+				If False, don't dispatch event handlers.
 				Defaults to True.
 
 			**kwargs:

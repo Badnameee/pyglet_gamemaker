@@ -52,6 +52,8 @@ class Button(_PushButton):
 	"""Window button is associated with"""
 	status: ButtonStatus
 	"""Status of button"""
+	dispatch: bool
+	"""if False, don't dispatch event handlers"""
 
 	_last_mouse_pos: Point2D = 0, 0
 	"""Holds the last mouse position registered by button"""
@@ -70,7 +72,7 @@ class Button(_PushButton):
 		group: Group,
 		anchor: Anchor = (0, 0),
 		*,
-		attach_events: bool = True,
+		dispatch: bool = True,
 		**kwargs,
 	) -> None:
 		"""Create a button.
@@ -95,8 +97,8 @@ class Button(_PushButton):
 			anchor (Anchor):
 				Anchor position. See `gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
-			attach_events (bool, optional):
-				If False, don't push mouse event handlers to window.
+			dispatch (bool, optional):
+				If False, don't dispatch event handlers. See `gui.Button` for more info.
 				Defaults to True.
 			kwargs:
 				Event handlers (name=func)
@@ -116,16 +118,15 @@ class Button(_PushButton):
 		)
 
 		self.start_pos = x, y
-
 		self.anchor = anchor
+		self.dispatch = dispatch
 
 		self.ID = ID
 		self.window = window
 		self.status = 'Unpressed'
 
 		# Adds event handler for mouse events
-		if attach_events:
-			self.window.push_handlers(self)
+		self.window.push_handlers(self)
 		# Adds any event handlers passed through kwargs
 		for name in kwargs:
 			self.register_event_type(name)
@@ -163,11 +164,11 @@ class Button(_PushButton):
 	def _update_status(self, x: int, y: int) -> None:
 		"""Update the status of the button given mouse position"""
 		if self.value:
-			if self.status != 'Pressed':
+			if self.dispatch and self.status != 'Pressed':
 				self.dispatch_event('on_half_click', self)
 			self.status = 'Pressed'
 		elif self._check_hit(x, y):
-			if self.status == 'Pressed':
+			if self.dispatch and self.status == 'Pressed':
 				self.dispatch_event('on_full_click', self)
 			self.status = 'Hover'
 		else:
