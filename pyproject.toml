@@ -40,18 +40,34 @@ python_version = "3.14"
 exclude = [
 	"^test/.*$",
 	"^run_tests\\.py$",
-	"^run_demo\\.py$"
+	"^run_demo\\.py$",
 ]
 
 [tool.ruff]
 exclude = [
 	"**/__init__.py",
-	"run_demo.py"
+	"run_demo.py",
+	".venv/*",
 ]
+
+[tool.ruff.lint]
+extend-select = [
+	"D",
+	"D401",
+	"I",
+	"T20",
+]
+extend-ignore = [
+	"D206",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.format]
 indent-style = "tab"
 quote-style = "single"
 
-[tool.ruff.lint]
-ignore = ["F403", "F405"]
+[tool.ruff.lint.per-file-ignores]
+"test/*" = ["D", "T20"]
+"run_tests.py" = ["T20"]
