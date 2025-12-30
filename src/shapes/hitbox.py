@@ -288,7 +288,7 @@ class Hitbox:
 		return False, None
 
 	def _calc_coords(self) -> None:
-		"""Updates coordinates based on new , angle, and/or anchor_pos"""
+		"""Updates coordinates based on new position, angle, and/or anchor_pos"""
 
 		# Steps:
 		# 1. Update local coords
@@ -723,11 +723,11 @@ class HitboxRender:
 		
 		To set both `.x` and `.y`, use `.pos`.
 		"""
-		return self._trans_pos[0]
+		return self.hitbox._trans_pos[0]
 	
 	@x.setter
 	def x(self, val: float) -> None:
-		self._trans_pos = val, self._trans_pos[1]
+		self.hitbox._trans_pos = val, self.hitbox._trans_pos[1]
 		self._calc_coords()
 
 	@property
@@ -736,21 +736,21 @@ class HitboxRender:
 		
 		To set both `.x` and `.y`, use `.pos`.
 		"""
-		return self._trans_pos[1]
+		return self.hitbox._trans_pos[1]
 	
 	@y.setter
 	def y(self, val: float) -> None:
-		self._trans_pos = self._trans_pos[0], val
+		self.hitbox._trans_pos = self.hitbox._trans_pos[0], val
 		self._calc_coords()
 
 	@property
 	def pos(self) -> Point2D:
 		"""The position of the anchor point."""
-		return self._trans_pos
+		return self.hitbox._trans_pos
 	
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
-		self._trans_pos = val
+		self.hitbox._trans_pos = val
 		self._calc_coords()
 
 	@property

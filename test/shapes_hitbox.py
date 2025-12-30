@@ -18,8 +18,8 @@ mode = 'rect'
 
 @window.event
 def on_mouse_motion(x, y, dx, dy):
-	hitbox.move_to(x, y)
-	circle.move_to(x, y)
+	hitbox.pos = x, y
+	circle.pos = x, y
 
 
 @window.event
