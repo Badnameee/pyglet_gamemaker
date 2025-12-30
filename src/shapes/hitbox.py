@@ -288,7 +288,7 @@ class Hitbox:
 		return False, None
 
 	def _calc_coords(self) -> None:
-		"""Updates coordinates based on new , angle, and/or anchor_pos"""
+		"""Updates coordinates based on new position, angle, and/or anchor_pos"""
 
 		# Steps:
 		# 1. Update local coords
