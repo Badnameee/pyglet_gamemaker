@@ -118,7 +118,7 @@ class Button(_PushButton):
 		)
 
 		self.start_pos = x, y
-		self.anchor = anchor
+		self.anchor_pos = anchor
 		self.dispatch = dispatch
 
 		self.ID = ID

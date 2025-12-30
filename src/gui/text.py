@@ -31,7 +31,7 @@ class Text(Label):
 
 	_text: str = ''
 	_pos: Point2D = 0, 0
-	_anchor: Point2D = 0, 0
+	_anchor_pos: Point2D = 0, 0
 
 	start_pos: Point2D
 	"""Original (*unanchored* AND *unrotated*) position of text"""
@@ -88,7 +88,7 @@ class Text(Label):
 			group=group,
 		)
 
-		self.anchor = anchor
+		self.anchor_pos = anchor
 		self.start_pos = self.pos = x, y
 		self.font_info = font_info
 		self.text = text
@@ -110,7 +110,7 @@ class Text(Label):
 	def _calc_anchor_pos(self, val: Anchor) -> None:
 		"""Calculate a new anchor position and sync position"""
 		self.raw_anchor = val
-		self._anchor = (
+		self._anchor_pos = (
 			(
 				# Convert if AnchorX, else use raw int value
 				self.CONVERT_DYNAMIC[val[0]] * self.content_width
@@ -152,7 +152,7 @@ class Text(Label):
 	@x.setter
 	def x(self, val: float) -> None:
 		self._pos = val, self._pos[1]
-		self._set_x(val - self._anchor[0])
+		self._set_x(val - self._anchor_pos[0])
 
 	@property
 	def y(self) -> float:
@@ -165,7 +165,7 @@ class Text(Label):
 	@y.setter
 	def y(self, val: float) -> None:
 		self._pos = self._pos[0], val
-		self._set_y(val - self._anchor[1] - self._descent)  # Fixes y not centering
+		self._set_y(val - self._anchor_pos[1] - self._descent)  # Fixes y not centering
 
 	@property
 	def pos(self) -> Point2D:
@@ -177,8 +177,8 @@ class Text(Label):
 		self._pos = val
 		self._set_position(
 			(
-				val[0] - self._anchor[0],
-				val[1] - self._anchor[1] - self._descent,  # Fixes y not centering
+				val[0] - self._anchor_pos[0],
+				val[1] - self._anchor_pos[1] - self._descent,  # Fixes y not centering
 				self._z,
 			)
 		)
@@ -191,11 +191,11 @@ class Text(Label):
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
-		return self._anchor[0]
+		return self._anchor_pos[0]
 
 	@anchor_x.setter
 	def anchor_x(self, val: AnchorX) -> None:
-		self._calc_anchor_pos((val, self._anchor[1]))
+		self._calc_anchor_pos((val, self._anchor_pos[1]))
 
 	@property  # type: ignore[override]
 	def anchor_y(self) -> float:
@@ -205,20 +205,20 @@ class Text(Label):
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
-		return self._anchor[1]
+		return self._anchor_pos[1]
 
 	@anchor_y.setter
 	def anchor_y(self, val: AnchorY) -> None:
-		self._calc_anchor_pos((self._anchor[0], val))
+		self._calc_anchor_pos((self._anchor_pos[0], val))
 
 	@property
-	def anchor(self) -> Point2D:
+	def anchor_pos(self) -> Point2D:
 		"""The anchor of the text, in px.
 
 		Can be set in px or dynamic.
 		"""
-		return self._anchor
+		return self._anchor_pos
 
-	@anchor.setter
-	def anchor(self, val: Anchor) -> None:
+	@anchor_pos.setter
+	def anchor_pos(self, val: Anchor) -> None:
 		self._calc_anchor_pos(val)
