@@ -11,9 +11,9 @@ class Scene(ABC, EventDispatcher):
 	`Window` object should hold all scenes in window.scenes dictionary.
 
 	Required Methods:
-	- `create_widgets`: To create all menu widgets and other logic (basically the init)
-	- `enable`: Enables scene (not rendering, just logic)
-	- `disable`: Disables scene (not rendering, just logic)
+	- `.create_widgets()`: To create all menu widgets and other logic (basically the init)
+	- `.enable()`: Enables scene (not rendering, just logic)
+	- `.disable()`: Disables scene (not rendering, just logic)
 
 	When inheriting, a batch must be created for automatic rendering.
 
@@ -27,7 +27,7 @@ class Scene(ABC, EventDispatcher):
 	event_handlers: dict[str, Callable]
 	"""All manually attached event handlers for this scene.
 	
-	**Do not modify**; use `add_event_handlers` and `remove_event_handlers` instead.
+	**Do not modify**; use `.add_event_handlers` and `.remove_event_handlers` instead.
 	"""
 
 	batch: Batch

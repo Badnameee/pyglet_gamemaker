@@ -16,14 +16,14 @@ class Menu(Scene, ABC):
 	"""Abstract class for a Menu (a Scene with boilerplate). Inherit to create own menus.
 
 	Required Methods:
-	- `create_widgets`: To create all menu widgets and other logic (basically the init)
-	- `enable`: Enables scene (not rendering, just logic)
-	- `disable`: Disables scene (not rendering, just logic)
+	- `.create_widgets()`: To create all menu widgets and other logic (basically the init)
+	- `.enable()`: Enables scene (not rendering, just logic)
+	- `.disable()`: Disables scene (not rendering, just logic)
 
-	Creates its own batch so do not manually create. Also creates groups inside batch.
-	- `bg_group`, `button_group`, and `text_group`
+	Creates its own batch so do not manually create. Also creates groups inside batch:
+	- `.bg_group`, `.button_group`, and `.text_group`
 
-	`default_font_info` stores default font info for widgets.
+	`.default_font_info` stores default font info for widgets.
 
 	Dispatches: Refer to `gui.Scene`
 	"""
