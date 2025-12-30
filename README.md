@@ -1,6 +1,7 @@
 # 📦 pyglet-gamemaker
 
 <!-- (add your badges here) -->
+[![PyPI version](https://badge.fury.io/py/pyglet-gamemaker.svg)](https://badge.fury.io/py/pyglet-gamemaker)
 
 <!-- > *Your documentation is a direct reflection of your software, so hold it to the same standards.* -->
 
