@@ -105,7 +105,7 @@ The following should go in `Menu.create_widgets()`:
 >>> )
 ```
 
-![](media/demo.gif)
+<img src="/media/demo.gif" width="50%" height="50%"/>
 
 
 ## ⬇️ Installation
