@@ -11,6 +11,9 @@ version-file = "_version.py"
 [project]
 name = "pyglet-gamemaker"
 dynamic = ["version"]
+dependencies = [
+	"pyglet>=2.1.10"
+]
 authors = [
 	{ name="Steven Robles", email="stevenrrobles13@gmail.com" }
 ]
