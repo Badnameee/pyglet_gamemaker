@@ -9,19 +9,23 @@
 
 <!-- A paragraph explaining your work, who you are, and why you made it. -->
 
-**Pyglet-Gamemaker** is an extension of Pyglet that simplifies the process of making games! This project began when I became frustrated at the boilerplate I had to write all the time, and I wanted a cleaner system to quickly add features.
+**pyglet-gamemaker** is an extension of Pyglet that simplifies the process of making games! This project began when I became frustrated at the boilerplate I had to write all the time, and I wanted a cleaner system to quickly add features.
 
 
 ## 🌟 Features
 
-- Scenes: Enabling and disabling handled automatically
-  - Menus: Easily create visuals + widgets
-- Widgets: Uses spritesheets instead of individual images
+- Hitboxes
+  - Fully working convex polygon collision
+  - Includes circles
 - Spritesheets:
   - Automatically loaded
   - Labelable to allow for indexing by string
 - Widgets:
   - Dynamic anchoring for changing size
+  - Uses spritesheets instead of individual images
+- Scenes:
+  - Enabling and disabling handled automatically
+  - Menus: Easily create visuals + widgets
 - Main Window class handles switching of scenes
 
 ### ✍️ Authors
