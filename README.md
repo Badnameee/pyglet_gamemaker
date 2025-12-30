@@ -76,7 +76,6 @@ The following should go in `Menu.create_widgets()`:
 
 - Creating text
 ```py
->>>  # Create separate text and button
 >>> self.create_text(
 >>>     'Text', 'Test',
 >>>     ('center', 'center'), color=pgm.types.Color.BLACK
@@ -88,6 +87,7 @@ The following should go in `Menu.create_widgets()`:
 >>> self.create_button(
 >>>     'Button', self.sheet, 0,
 >>>     ('center', 'center'),
+>>>     # Event handlers defined in empty Menu class above
 >>>     on_half_click=self.on_half_click, on_full_click=self.on_full_click
 >>> )
 ```
@@ -101,6 +101,7 @@ The following should go in `Menu.create_widgets()`:
 >>>     'TextButton', 'Text',
 >>>     self.sheet, 0,
 >>>     ('center', 'center'), ('center', 'center'),
+>>>     # Event handlers defined in empty Menu class above
 >>>     on_half_click=self.on_half_click, on_full_click=self.on_full_click
 >>> )
 ```
