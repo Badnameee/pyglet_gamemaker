@@ -8,6 +8,7 @@ tests = [
 	'gui_text_button',
 	'shapes_hitbox',
 	'shapes_rect',
+	'shapes_circle',
 	'menu',
 	'window',
 ]

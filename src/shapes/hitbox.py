@@ -231,10 +231,11 @@ class Hitbox:
 		if not isinstance(other, Hitbox):
 			other = other.hitbox
 
-		# If other is Circle, then call from circle POV to get forced axis
-		# First clause prevents infinite recursion
-		if self.subtype != 'circle' and other.subtype == 'circle':
-			return other.collide(self, sacrifice_MTV)
+		# Get special circle collision axis
+		if isinstance(self, HitboxCircle):
+			self._set_collision_axis(other)
+		if isinstance(other, HitboxCircle):
+			other._set_collision_axis(self)
 
 		# * Step 1: Get the normal axes of each edge
 		axes = self._get_axes(sacrifice_MTV)
@@ -480,14 +481,6 @@ class HitboxCircle(Hitbox):
 		proj = axis.dot(Vec2(*self.coords[0]))
 		return proj - self.radius, proj + self.radius
 
-	def collide(
-		self,
-		other: Hitbox | HitboxRender | HitboxRenderCircle,
-		sacrifice_MTV: bool = False,
-	) -> tuple[Literal[False], None] | tuple[Literal[True], Vec2]:
-		self._set_collision_axis(other)
-		return super().collide(other, sacrifice_MTV)
-
 	def collide_any(
 		self,
 		others: list[Hitbox | HitboxRender | HitboxRenderCircle],
@@ -522,6 +515,18 @@ class HitboxCircle(Hitbox):
 		# Get hitbox if not subclass
 		if not isinstance(hitbox, Hitbox):
 			hitbox = hitbox.hitbox
+
+		#* Special case: circle-circle collision
+		#*	To calculate collision axis, use line between centers
+		if isinstance(hitbox, HitboxCircle):
+			# Get vector pointing from the center of circle #1 to...
+			self.axis = Vec2(
+				self.coords[0][0] - hitbox.coords[0][0],
+				self.coords[0][1] - hitbox.coords[0][1]
+			)
+			# ... the edge of circle #2
+			self.axis = self.axis.normalize() * (self.axis.length() - hitbox.radius)
+			return
 
 		# Get closest point to other hitbox
 		least = Vec2(0, 0), float('inf')
@@ -915,6 +920,7 @@ class HitboxRenderCircle:
 	@x.setter
 	def x(self, val: float) -> None:
 		self.hitbox.x = val
+		self._calc_coords()
 
 	@property
 	def y(self) -> float:
@@ -927,6 +933,7 @@ class HitboxRenderCircle:
 	@y.setter
 	def y(self, val: float) -> None:
 		self.hitbox.y = val
+		self._calc_coords()
 
 	@property
 	def pos(self) -> Point2D:
@@ -936,6 +943,7 @@ class HitboxRenderCircle:
 	@pos.setter
 	def pos(self, val: Point2D) -> None:
 		self.hitbox.pos = val
+		self._calc_coords()
 
 	@property
 	def anchor_x(self) -> float:
