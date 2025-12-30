@@ -6,9 +6,9 @@ from .hitbox import HitboxRender
 class Rect(HitboxRender):
 	"""A rendered rectangle.
 
-	Has attributes for each vertex (`.bottomleft`, `.bottomright`, `.topright`, `.topleft`)
+	Has attributes for each vertex position (`.bottomleft`, `.bottomright`, `.topright`, `.topleft`)
 
-	To create a rectangle without a render, use `shapes.Hitbox.from_rect`.
+	To create a rectangle without a render, use `shapes.Hitbox.from_rect()`.
 	"""
 
 	def __init__(
@@ -40,7 +40,8 @@ class Rect(HitboxRender):
 			group (Group):
 				The group for rendering
 			anchor_pos (Point2D, optional):
-				The starting anchor position. Defaults to (0, 0).
+				The starting anchor position.
+				Defaults to (0, 0).
 		"""
 
 		super().__init__(
@@ -53,72 +54,24 @@ class Rect(HitboxRender):
 		)
 
 	@property
-	def x(self) -> float:
-		"""The x position of the rect. Does not represent the actual position.
-
-		To be more specific, the x translation added to the local coords.
-		"""
-		return self.hitbox._trans_pos[0]
-
-	@x.setter
-	def x(self, val: float) -> None:
-		self.move_to(x=val)
-
-	@property
-	def y(self) -> float:
-		"""The y position of the rect. Does not represent the actual position.
-
-		To be more specific, the y translation added to the local coords.
-		"""
-		return self.hitbox._trans_pos[1]
-
-	@y.setter
-	def y(self, val: float) -> None:
-		self.move_to(y=val)
-
-	@property
-	def pos(self) -> Point2D:
-		"""The position of the rect. Does not represent the actual position.
-
-		To be more specific, the translation added to the local coords.
-		"""
-		return self.hitbox._trans_pos
-
-	@pos.setter
-	def pos(self, val: Point2D) -> None:
-		self.move_to(*val)
-
-	@property
 	def bottomleft(self) -> Point2D:
-		"""The bottomleft vertex of the rect. Does not represent the actual position.
-
-		To be more specific, the *unrotated* AND *unanchored* vertex position.
-		"""
-		return self.hitbox._raw_coords[0]
+		"""The bottomleft vertex position of the rect after all transformations"""
+		return self.hitbox.coords[0]
 
 	@property
 	def bottomright(self) -> Point2D:
-		"""The bottomright vertex of the rect. Does not represent the actual position.
-
-		To be more specific, the *unrotated* AND *unanchored* vertex position.
-		"""
-		return self.hitbox._raw_coords[1]
+		"""The bottomright vertex position of the rect after all transformations"""
+		return self.hitbox.coords[1]
 
 	@property
 	def topright(self) -> Point2D:
-		"""The topright vertex of the rect. Does not represent the actual position.
-
-		To be more specific, the *unrotated* AND *unanchored* vertex position.
-		"""
-		return self.hitbox._raw_coords[2]
+		"""The topright vertex position of the rect after all transformations"""
+		return self.hitbox.coords[2]
 
 	@property
 	def topleft(self) -> Point2D:
-		"""The topleft vertex of the rect. Does not represent the actual position.
-
-		To be more specific, the *unrotated* AND *unanchored* vertex position.
-		"""
-		return self.hitbox._raw_coords[3]
+		"""The topleft vertex position of the rect after all transformations"""
+		return self.hitbox.coords[3]
 
 	@property
 	def width(self) -> float:

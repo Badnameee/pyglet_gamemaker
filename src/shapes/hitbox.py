@@ -11,10 +11,10 @@ from ..types import *
 class Hitbox:
 	"""Store a convex hitbox that uses SAT (Separating Axis Theorem) method for collision.
 
-	Can use `from_rect` to get coords for rectangle.
+	Can use `.from_rect()` to get coords for rectangle.
 	Use `hitbox.HitboxCircle` for circle collisions.
 
-	For _coord vars (ex. `_local_coords`), there are 3 types of transformation
+	For _coord vars (ex. `._local_coords`), there are 3 types of transformation
 	- translated: Adding global position of hitbox to local position (moving in 2D space)
 	- rotated: Adding the rotation of the hitbox
 	- anchored: Shifting global position to account for anchor position of hitbox
@@ -337,7 +337,7 @@ class Hitbox:
 		)
 
 	def _get_rotated_pos(self, coord: Point2D, axis: Axis) -> float | Point2D:
-		"""Gets the rotated point using `angle`.
+		"""Gets the rotated point using `.angle`.
 
 		Args:
 			coord (Point2D):
@@ -359,26 +359,48 @@ class Hitbox:
 			coord[0] * math.sin(self.angle) + coord[1] * math.cos(self.angle),
 		)
 
-	def move_to(self, x: float | None = None, y: float | None = None) -> None:
-		"""Move the hitbox to a location based on anchor.
-		Setting argument to None (default) will not change that axis pos.
-
-		Args:
-			x (float | None, optional):
-				New x.
-				Defaults to None.
-			y (float | None, optional):
-				New y.
-				Defaults to None.
+	@property
+	def x(self) -> float:
+		"""The x position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
 		"""
-		x = x if x is not None else self._trans_pos[0]
-		y = y if y is not None else self._trans_pos[1]
-		self._trans_pos = x, y
+		return self._trans_pos[0]
+	
+	@x.setter
+	def x(self, val: float) -> None:
+		self._trans_pos = val, self._trans_pos[1]
+		self._calc_coords()
+
+	@property
+	def y(self) -> float:
+		"""The y position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
+		"""
+		return self._trans_pos[1]
+	
+	@y.setter
+	def y(self, val: float) -> None:
+		self._trans_pos = self._trans_pos[0], val
+		self._calc_coords()
+
+	@property
+	def pos(self) -> Point2D:
+		"""The position of the anchor point."""
+		return self._trans_pos
+	
+	@pos.setter
+	def pos(self, val: Point2D) -> None:
+		self._trans_pos = val
 		self._calc_coords()
 
 	@property
 	def anchor_x(self) -> float:
-		"""Anchor on x-axis"""
+		"""The x anchor of the hitbox.
+
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		"""
 		return self._anchor_pos[0]
 
 	@anchor_x.setter
@@ -388,7 +410,10 @@ class Hitbox:
 
 	@property
 	def anchor_y(self) -> float:
-		"""Anchor on y-axis"""
+		"""The y anchor of the hitbox.
+
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		"""
 		return self._anchor_pos[1]
 
 	@anchor_y.setter
@@ -398,7 +423,7 @@ class Hitbox:
 
 	@property
 	def anchor_pos(self) -> Point2D:
-		"""Anchor position (x, y)"""
+		"""The anchor of the hitbox."""
 		return self._anchor_pos
 
 	@anchor_pos.setter
@@ -549,41 +574,9 @@ class HitboxCircle(Hitbox):
 			),
 		)
 
-	def move_to(self, x: float | None = None, y: float | None = None) -> None:
-		"""Move the hitbox to a location based on anchor.
-		Setting argument to None (default) will not change that axis pos.
-
-		Args:
-			x (float | None, optional):
-				New x.
-				Defaults to None.
-			y (float | None, optional):
-				New y.
-				Defaults to None.
-		"""
-		x = x if x is not None else self._trans_pos[0]
-		y = y if y is not None else self._trans_pos[1]
-		self.coords = ((x, y), (self.radius, 0))
-		super().move_to(x, y)
-
-	@property
-	def x(self) -> float:
-		"""Center x position of circle"""
-		return self._trans_pos[0]
-
-	@property
-	def y(self) -> float:
-		"""Center y position of circle"""
-		return self._trans_pos[1]
-
-	@property
-	def pos(self) -> Point2D:
-		"""Center position of circle"""
-		return self._trans_pos
-
 
 class HitboxRender:
-	"""Holds a Hitbox with `hitbox` and `render` objects"""
+	"""Holds a Hitbox with `.hitbox` and `.render` objects"""
 
 	_hitbox_color: Color
 
@@ -724,26 +717,48 @@ class HitboxRender:
 		self.render.x = self.hitbox.coords[0][0]
 		self.render.y = self.hitbox.coords[0][1]
 
-	def move_to(self, x: float | None = None, y: float | None = None) -> None:
-		"""Move the hitbox to a location based on anchor.
-		Passing nothing will leave axis unchanged.
-
-		Args:
-			x (float | None, optional):
-				New x.
-				Defaults to None.
-			y (float | None, optional):
-				New y.
-				Defaults to None.
+	@property
+	def x(self) -> float:
+		"""The x position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
 		"""
-		x = x if x is not None else self.hitbox._trans_pos[0]
-		y = y if y is not None else self.hitbox._trans_pos[1]
-		self.hitbox._trans_pos = x, y
+		return self._trans_pos[0]
+	
+	@x.setter
+	def x(self, val: float) -> None:
+		self._trans_pos = val, self._trans_pos[1]
+		self._calc_coords()
+
+	@property
+	def y(self) -> float:
+		"""The y position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
+		"""
+		return self._trans_pos[1]
+	
+	@y.setter
+	def y(self, val: float) -> None:
+		self._trans_pos = self._trans_pos[0], val
+		self._calc_coords()
+
+	@property
+	def pos(self) -> Point2D:
+		"""The position of the anchor point."""
+		return self._trans_pos
+	
+	@pos.setter
+	def pos(self, val: Point2D) -> None:
+		self._trans_pos = val
 		self._calc_coords()
 
 	@property
 	def anchor_x(self) -> float:
-		"""Anchor on x-axis"""
+		"""The x anchor of the hitbox.
+
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		"""
 		return self.hitbox.anchor_x
 
 	@anchor_x.setter
@@ -753,7 +768,10 @@ class HitboxRender:
 
 	@property
 	def anchor_y(self) -> float:
-		"""Anchor on y-axis"""
+		"""The y anchor of the hitbox.
+
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		"""
 		return self.hitbox.anchor_y
 
 	@anchor_y.setter
@@ -763,7 +781,7 @@ class HitboxRender:
 
 	@property
 	def anchor_pos(self) -> Point2D:
-		"""Anchor position (x, y)"""
+		"""The anchor of the hitbox."""
 		return self.hitbox._anchor_pos
 
 	@anchor_pos.setter
@@ -793,7 +811,7 @@ class HitboxRender:
 
 
 class HitboxRenderCircle:
-	"""Holds a Circle Hitbox with `hitbox` and `render` objects"""
+	"""Holds a Circle Hitbox with `.hitbox` and `.render` objects"""
 
 	_hitbox_color: Color
 
@@ -886,27 +904,45 @@ class HitboxRenderCircle:
 		self.hitbox._calc_coords()
 		self.render.position = self.hitbox.coords[0]
 
-	def move_to(self, x: float | None = None, y: float | None = None) -> None:
-		"""Move the hitbox to a location based on anchor.
-		Setting argument to None (default) will not change that axis pos.
-
-		Args:
-			x (float | None, optional):
-				New x.
-				Defaults to None.
-			y (float | None, optional):
-				New y.
-				Defaults to None.
+	@property
+	def x(self) -> float:
+		"""The x position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
 		"""
-		x = x if x is not None else self.hitbox._trans_pos[0]
-		y = y if y is not None else self.hitbox._trans_pos[1]
-		self.hitbox.coords = ((x, y), (self.hitbox.radius, 0))
-		self.hitbox._trans_pos = x, y
-		self._calc_coords()
+		return self.hitbox.x
+	
+	@x.setter
+	def x(self, val: float) -> None:
+		self.hitbox.x = val
+
+	@property
+	def y(self) -> float:
+		"""The y position of the anchor point.
+		
+		To set both `.x` and `.y`, use `.pos`.
+		"""
+		return self.hitbox.y
+	
+	@y.setter
+	def y(self, val: float) -> None:
+		self.hitbox.y = val
+
+	@property
+	def pos(self) -> Point2D:
+		"""The position of the anchor point."""
+		return self.hitbox.pos
+	
+	@pos.setter
+	def pos(self, val: Point2D) -> None:
+		self.hitbox.pos = val
 
 	@property
 	def anchor_x(self) -> float:
-		"""Anchor on x-axis"""
+		"""The x anchor of the hitbox.
+
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		"""
 		return self.hitbox.anchor_x
 
 	@anchor_x.setter
@@ -916,7 +952,10 @@ class HitboxRenderCircle:
 
 	@property
 	def anchor_y(self) -> float:
-		"""Anchor on y-axis"""
+		"""The y anchor of the hitbox.
+
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		"""
 		return self.hitbox.anchor_y
 
 	@anchor_y.setter
@@ -926,7 +965,7 @@ class HitboxRenderCircle:
 
 	@property
 	def anchor_pos(self) -> Point2D:
-		"""Anchor position (x, y)"""
+		"""The anchor of the hitbox."""
 		return self.hitbox._anchor_pos
 
 	@anchor_pos.setter
@@ -936,7 +975,7 @@ class HitboxRenderCircle:
 
 	@property
 	def angle(self) -> float:
-		"""Angle, in radians, of hitbox"""
+		"""The angle, in radians, of the hitbox"""
 		return self.hitbox._angle
 
 	@angle.setter
@@ -945,23 +984,8 @@ class HitboxRenderCircle:
 		self._calc_coords()
 
 	@property
-	def x(self) -> float:
-		"""Center x position of circle"""
-		return self.hitbox.x
-
-	@property
-	def y(self) -> float:
-		"""Center y position of circle"""
-		return self.hitbox.y
-
-	@property
-	def pos(self) -> Point2D:
-		"""Center position of circle"""
-		return self.hitbox.pos
-
-	@property
 	def hitbox_color(self) -> Color:
-		"""Color of hitbox"""
+		"""The color of the hitbox"""
 		return self._hitbox_color
 
 	@hitbox_color.setter
