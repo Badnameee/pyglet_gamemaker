@@ -40,7 +40,7 @@ I'm [Steven Robles](https://github.com/Badnameee) and I am a high school student
 A simple program to render an empty Menu:
 ```py
 >>> import pyglet_gamemaker as pgm
->>> from pgm.types import Color
+>>> from pyglet_gamemaker.types import Color
 >>> 
 >>> 
 >>> class Menu(pgm.Menu):
@@ -60,8 +60,8 @@ A simple program to render an empty Menu:
 
 Example Menu showing all features
 ```py
->>> import src as pgm
->>> from src.types import Color
+>>> import pyglet_gamemaker as pgm
+>>> from pyglet_gamemaker.types import Color
 >>> 
 >>> 
 >>> class Menu(pgm.Menu):
