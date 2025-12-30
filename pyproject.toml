@@ -36,7 +36,8 @@ Issues = "https://github.com/Badnameee/pyglet-gamemaker/issues"
 python_version = "3.14"
 exclude = [
 	"^test/.*$",
-	"^run_tests\\.py$"
+	"^run_tests\\.py$",
+	"^run_demo\\.py$"
 ]
 
 [tool.ruff]
