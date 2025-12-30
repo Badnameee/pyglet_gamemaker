@@ -44,7 +44,10 @@ exclude = [
 ]
 
 [tool.ruff]
-exclude = ["**/__init__.py"]
+exclude = [
+	"**/__init__.py",
+	"run_demo.py"
+]
 
 [tool.ruff.format]
 indent-style = "tab"
