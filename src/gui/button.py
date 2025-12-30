@@ -88,7 +88,8 @@ class Button(_PushButton):
 				Anchor position. See `gui.Button` for more info on anchor values.
 				Defaults to (0, 0).
 			attach_events (bool, optional):
-				If False, don't push mouse event handlers to window
+				If False, don't push mouse event handlers to window.
+				Defaults to True.
 			kwargs:
 				Event handlers (name=func)
 		"""

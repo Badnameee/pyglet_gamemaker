@@ -42,9 +42,11 @@ class TextButton:
 			text_anchor: Anchor=(0, 0),
 			font_info: FontInfo=(None, None),
 			color: Color=Color.WHITE,
-			hover_enlarge: int=0, **kwargs
+			hover_enlarge: int=0,
+			attach_events: bool=False,
+			**kwargs
 	) -> None:
-		"""Create a button with text
+		"""Create a button with text.
 
 		Args:
 			ID (str):
@@ -80,6 +82,9 @@ class TextButton:
 			hover_enlarge (int, optional):
 				How much to enlarge text when hovered over.
 				Defaults to 0.
+			attach_events (bool, optional):
+				If False, don't push mouse event handlers to window.
+				Defaults to True.
 
 			**kwargs:
 				Any event handlers to attach (such as 'on_full_click')
@@ -90,7 +95,8 @@ class TextButton:
 			image_sheet, image_start,
 			window, batch, button_group,
 			button_anchor,
-			attach_events=False, **kwargs
+			attach_events=attach_events,
+			**kwargs
 		)
 		self.hover_enlarge = hover_enlarge
 
