@@ -15,7 +15,7 @@ class Scene(ABC, EventDispatcher):
 	- `.enable()`: Enables scene (not rendering, just logic)
 	- `.disable()`: Disables scene (not rendering, just logic)
 
-	When inheriting, a batch must be created for automatic rendering.
+	Batch is automatically created, so groups can be made after __init__ call.
 
 	Dispatches:
 	- 'on_scene_change' (to window) when program wishes to switch scenes.
@@ -48,6 +48,7 @@ class Scene(ABC, EventDispatcher):
 		"""
 		self.event_handlers = {}
 		self.name = name
+		self.batch = Batch()
 
 		# Adds any event handlers passed through kwargs
 		self.add_event_handlers(**kwargs)

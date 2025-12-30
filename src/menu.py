@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from pyglet.window import Window
-from pyglet.graphics import Batch, Group
+from pyglet.graphics import Group
 from .scene import Scene
 from .types import *
 from .shapes import Rect
@@ -20,7 +20,8 @@ class Menu(Scene, ABC):
 	- `.enable()`: Enables scene (not rendering, just logic)
 	- `.disable()`: Disables scene (not rendering, just logic)
 
-	Creates its own batch so do not manually create. Also creates groups inside batch:
+	Creates its own batch and groups:
+	- `.batch`
 	- `.bg_group`, `.button_group`, and `.text_group`
 
 	`.default_font_info` stores default font info for widgets.
@@ -60,7 +61,6 @@ class Menu(Scene, ABC):
 
 		self.widgets = {}
 
-		self.batch = Batch()
 		self.bg_group = Group(0)
 		self.button_group = Group(1)
 		self.text_group = Group(2)
@@ -110,7 +110,7 @@ class Menu(Scene, ABC):
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name and size.
-				Defaults to value in `default_font_info`.
+				Defaults to value in `.default_font_info`.
 			color (Color, optional):
 				Color of text.
 				Defaults to Color.WHITE.
@@ -208,7 +208,7 @@ class Menu(Scene, ABC):
 				Defaults to (0, 0).
 			font_info (FontInfo, optional):
 				Font name and size.
-				Defaults to value in `default_font_info`.
+				Defaults to value in `.default_font_info`.
 			color (Color, optional):
 				Color of text.
 				Defaults to Color.WHITE.
