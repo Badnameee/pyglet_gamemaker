@@ -9,7 +9,7 @@ tests = [
 	'shapes_hitbox',
 	'shapes_rect',
 	'shapes_circle',
-	'menu',
+	'scene',
 	'window',
 ]
 

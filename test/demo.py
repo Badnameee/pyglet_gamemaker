@@ -1,4 +1,4 @@
-import src as pgm
+import pyglet_gamemaker as pgm
 
 
 class Menu(pgm.Menu):
