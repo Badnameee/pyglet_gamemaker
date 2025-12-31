@@ -1,11 +1,11 @@
 import pyglet
 from pyglet.window import Window
-from src.menu import Menu
+from pyglet_gamemaker.scene import Scene
 from src.sprite import SpriteSheet
 from src.types import *
 
 
-class TestMenu(Menu):
+class TestScene(Scene):
 	WIDGET_POS = {'Test1': (0.2, 0.1), 'Test2': (0.5, 0.5), 'Test3': (0.7, 0.7)}
 
 	default_font_info = None, 40
@@ -14,10 +14,10 @@ class TestMenu(Menu):
 		super().__init__(name)
 		self.bg_color = bg_color
 
-	def create_widgets(self):
+	def initialize(self):
 		self.sheet = SpriteSheet('Default Button.png', 3, 1)
 
-		self.create_bg(self.bg_color)
+		self.bg = self.create_bg(self.bg_color)
 		self.create_text(
 			'Test1',
 			'Hi',
@@ -64,7 +64,7 @@ class TestMenu(Menu):
 			widget.disable()
 
 
-menu = TestMenu('Test', Color.ORANGE)
+menu = TestScene('Test', Color.ORANGE)
 window = Window(640, 480, caption=__name__)
 menu.set_window(window)
 menu.enable()
