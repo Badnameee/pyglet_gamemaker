@@ -1,11 +1,14 @@
-import string
+from __future__ import annotations
+
 import random
+import string
 
 import pyglet
-from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
-from src.gui import Text
+from pyglet.window import Window, key
+
+from pyglet_gamemaker.gui import Text
 
 window = Window(640, 480, caption=__name__)
 batch = Batch()
@@ -15,6 +18,14 @@ UI_group = Group(1)
 
 @window.event
 def on_mouse_motion(x, y, dx, dy):
+	# txt.pos = x, y
+	txt.offset((dx, dy))
+	txt_anchor.position = txt.pos
+	print(f'New txt pos: {txt.pos}')
+
+
+@window.event
+def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
 	# txt.pos = x, y
 	txt.offset((dx, dy))
 	txt_anchor.position = txt.pos
@@ -46,7 +57,6 @@ def on_key_press(symbol, modifiers):
 		return
 
 	print(f'New txt pos: {txt.pos}')
-	print(f'New txt font: {txt.font_info}')
 	txt_anchor.position = txt.pos
 
 

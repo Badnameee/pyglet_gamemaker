@@ -2,8 +2,8 @@ import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
-from src.gui import Button
-from src.sprite import SpriteSheet
+from pyglet_gamemaker.gui import Button
+from pyglet_gamemaker.sprite import SpriteSheet
 
 window = Window(640, 480, caption=__name__)
 pyglet.gl.glClearColor(1, 1, 1, 1)

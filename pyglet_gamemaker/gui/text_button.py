@@ -1,16 +1,18 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from ..types import *
-from .text import Text
-from .button import Button
+from . import Button, Text, Widget
 
 if TYPE_CHECKING:
-	from pyglet.window import Window
 	from pyglet.graphics import Batch, Group
+	from pyglet.window import Window
+
 	from ..sprite import SpriteSheet
 
 
-class TextButton:
+class TextButton(Widget):
 	"""Both a 2D button and 2D text in one. Refer to `gui.Button` and `gui.Text`.
 
 	Dispatches: Refer to `gui.Button`.
@@ -20,7 +22,7 @@ class TextButton:
 	Use kwargs to attach event handlers.
 	"""
 
-	_hover_enlarge = 0
+	_hover_enlarge: int = 0
 
 	window: Window
 	"""Window button is associated with."""
@@ -28,6 +30,8 @@ class TextButton:
 	"""Button object"""
 	text: Text
 	"""Text object"""
+	start_hover_enlarge: int
+	"""Starting hover enlarge value"""
 
 	_enlarged: bool = False
 	"""If true, text is currently enlarged. Used internally to enlarge text once."""
@@ -49,7 +53,7 @@ class TextButton:
 		font_info: FontInfo = (None, None),
 		color: Color = Color.WHITE,
 		hover_enlarge: int = 0,
-		attach_events: bool = False,
+		dispatch: bool = True,
 		**kwargs,
 	) -> None:
 		"""Create a button with text.
@@ -88,14 +92,13 @@ class TextButton:
 			hover_enlarge (int, optional):
 				How much to enlarge text when hovered over.
 				Defaults to 0.
-			attach_events (bool, optional):
-				If False, don't dispatch event handlers.
+			dispatch (bool, optional):
+				If False, don't dispatch events to handlers. See `gui.Button` for more info.
 				Defaults to True.
 
 			**kwargs:
 				Any event handlers to attach (such as 'on_full_click')
 		"""
-
 		self.button = Button(
 			ID,
 			x,
@@ -106,10 +109,11 @@ class TextButton:
 			batch,
 			button_group,
 			button_anchor,
-			attach_events=attach_events,
+			dispatch=dispatch,
+			attach_events=False,
 			**kwargs,
 		)
-		self.hover_enlarge = hover_enlarge
+		self.start_hover_enlarge = self.hover_enlarge = hover_enlarge
 
 		self.text = Text(
 			text,
@@ -124,88 +128,92 @@ class TextButton:
 
 		self.window = window
 		# Adds event handler for mouse events
-		self.window.push_handlers(self)
+		self.window.push_handlers(
+			on_mouse_press=self._on_mouse_press,
+			on_mouse_release=self._on_mouse_release,
+			on_mouse_motion=self._on_mouse_motion,
+			on_mouse_drag=self._on_mouse_drag,
+		)
+
+	def reset(self) -> None:
+		self.text.reset()
+		self.button.reset()
+		self.hover_enlarge = self.start_hover_enlarge
+		# Sync status
+		self._on_mouse_motion(*self.button._last_mouse_pos, 0, 0)
+
+	def _calc_anchor(self) -> None:
+		self.button._calc_anchor()
 
 	def _enlarge(self) -> None:
 		"""Enlarge the text based on button status"""
-
-		# Hovering
 		if self.button.status == 'Hover':
 			# First frame hover: enlarge text
 			if not self._enlarged:
 				self._enlarged = True
-
-				# * Automatically centers text when enlarging
-				# First get previous dimensions
-				prev = self.text.content_width, self.text.content_height
-
-				self.text.font_size += self.hover_enlarge
-
-				# Use new dimensions to find difference to recenter
-				# Have to check if dynamic anchor first
-				if isinstance(self.text.raw_anchor[0], str):
-					# Store the previous dynamic anchor to set
-					# because adding to anchor x makes anchor static
-					anchor = self.text.raw_anchor
-					self.text.anchor_x += (self.text.content_width - prev[0]) / 2
-					self.text.raw_anchor = anchor
-
-				if isinstance(self.text.raw_anchor[1], str):
-					# Store the previous dynamic anchor to set
-					# because adding to anchor x makes anchor static
-					anchor = self.text.raw_anchor
-					self.text.anchor_y += (self.text.content_height - prev[1]) / 2
-					self.text.raw_anchor = anchor
+				prev = self.text.width, self.text.height
+				self.text.font_size += self._hover_enlarge
+				self._sync_text_anchor(prev)
 		else:
 			# First frame unhover: unenlarge text
 			if self._enlarged:
 				self._enlarged = False
+				prev = self.text.width, self.text.height
+				self.text.font_size -= self._hover_enlarge
+				self._sync_text_anchor(prev)
 
-				# * Automatically centers text when enlarging
-				# First get previous dimensions
-				prev = self.text.content_width, self.text.content_height
+	def _sync_text_anchor(self, prev: tuple[int, int]) -> None:
+		"""Sync anchor of text widget using dimensions before resize.
 
-				self.text.font_size -= self.hover_enlarge
+		Args:
+			prev (tuple[int, int]):
+				The previous dimensions before resizing text
+		"""
+		# Only sync if dynamic anchor
+		# Use _anchor to circumvent auto setting of raw_anchor to static
 
-				# Use new dimensions to find difference to recenter
-				if isinstance(self.text.raw_anchor[0], str):
-					# Store the previous dynamic anchor to set
-					# because adding to anchor x makes anchor static
-					anchor = self.text.raw_anchor
-					self.text.anchor_x += (self.text.content_width - prev[0]) / 2
-					self.text.raw_anchor = anchor
+		if isinstance(self.text.raw_anchor[0], str):
+			self.text._anchor = (
+				self.text.anchor_x + (self.text.width - prev[0]) / 2,
+				self.text.anchor_y,
+			)
+			# Refresh position
+			self.button.pos = self.button.pos
+			self.text.pos = self.text.pos
 
-				if isinstance(self.text.raw_anchor[1], str):
-					# Store the previous dynamic anchor to set
-					# because adding to anchor x makes anchor static
-					anchor = self.text.raw_anchor
-					self.text.anchor_y += (self.text.content_height - prev[1]) / 2
-					self.text.raw_anchor = anchor
+		if isinstance(self.text.raw_anchor[1], str):
+			self.text._anchor = (
+				self.text.anchor_x,
+				self.text.anchor_y + (self.text.height - prev[1]) / 2,
+			)
+			# Refresh position
+			self.button.pos = self.button.pos
+			self.text.pos = self.text.pos
 
-	def on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+	def _on_mouse_press(self, x: int, y: int, buttons: int, modifiers: int) -> None:
 		if not self.button.enabled:
 			return
-		self.button.on_mouse_press(x, y, buttons, modifiers)
+		self.button._on_mouse_press(x, y, buttons, modifiers)
 		self._enlarge()
 
-	def on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
+	def _on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> None:
 		if not self.button.enabled:
 			return
-		self.button.on_mouse_motion(x, y, dx, dy)
+		self.button._on_mouse_motion(x, y, dx, dy)
 		self._enlarge()
 
-	def on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> None:
+	def _on_mouse_release(self, x: int, y: int, buttons: int, modifiers: int) -> None:
 		if not self.button.enabled:
 			return
-		self.button.on_mouse_release(x, y, buttons, modifiers)
+		self.button._on_mouse_release(x, y, buttons, modifiers)
 		self._enlarge()
 
-	def on_mouse_drag(
+	def _on_mouse_drag(
 		self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int
 	) -> None:
 		if not self.button.enabled:
 			return
-		self.button.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+		self.button._on_mouse_drag(x, y, dx, dy, buttons, modifiers)
 		self._enlarge()
 
 	def enable(self) -> None:
@@ -214,10 +222,10 @@ class TextButton:
 	def disable(self) -> None:
 		self.button.disable()
 
-	@property  # type: ignore[override]
+	@property
 	def x(self) -> float:
 		"""The x position of the anchor point. Setting sets text AND button.
-		
+
 		To set both `.x` and `.y`, use `.pos`.
 		"""
 		return self.button.x
@@ -230,7 +238,7 @@ class TextButton:
 	@property
 	def y(self) -> float:
 		"""The y position of the anchor point. Setting sets text AND button.
-		
+
 		To set both `.x` and `.y`, use `.pos`.
 		"""
 		return self.button.y
@@ -256,17 +264,32 @@ class TextButton:
 
 		Can be set in px or dynamic (see `gui.Button` and `gui.Text`)
 
-		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
 		return self.button.anchor_x
 
 	@anchor_x.setter
 	def anchor_x(self, val: AnchorX) -> None:
-		self.button.anchor_x = self.text.anchor_x = val
+		self.button.anchor_x = val
+
+		# Just overwrite anchor if dynamic
+		# 	If static, use _anchor to circumvent auto setting of
+		# 	possible dynamic raw_anchor to static
+		if isinstance(val, str):
+			self.text.anchor_x = val
+		else:
+			self.text._anchor = val, self.text.anchor_y
+
 		# Subtract half of width diff between items (because text centered in button)
-		# to correct for different sized text
-		self.text.anchor_x -= (self.button.width - self.text.content_width) / 2
-		self._enlarge()
+		# 	to correct for different sized text
+		self.text._anchor = (
+			self.text.anchor_x - (self.button.width - self.text.width) / 2,
+			self.text.anchor_y,
+		)
+		# Refresh position
+		self.pos = self.pos
+
+		# * Do not call ._enlarge as refreshing position calls it already
 
 	@property
 	def anchor_y(self) -> float:
@@ -274,30 +297,44 @@ class TextButton:
 
 		Can be set in px or dynamic (see `gui.Button` and `gui.Text`)
 
-		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
+		To set both `.anchor_x` and `.anchor_y`, use `.anchor`
 		"""
 		return self.button.anchor_y
 
 	@anchor_y.setter
 	def anchor_y(self, val: AnchorY) -> None:
-		self.button.anchor_y = self.text.anchor_y = val
+		self.button.anchor_y = val
+
+		# Just overwrite anchor if dynamic
+		# 	If static, use _anchor to circumvent auto setting of
+		# 	possible dynamic raw_anchor to static
+		if isinstance(val, str):
+			self.text.anchor_y = val
+		else:
+			self.text._anchor = self.text.anchor_x, val
+
 		# Subtract half of height diff between items (because text centered in button)
-		# to correct for different sized text
-		self.text.anchor_y -= (self.button.height - self.text.content_height) / 2
-		self._enlarge()
+		# 	to correct for different sized text
+		self.text._anchor = (
+			self.text.anchor_x,
+			self.text.anchor_y - (self.button.height - self.text.height) / 2,
+		)
+		# Refresh position
+		self.pos = self.pos
+
+		# * Do not call ._enlarge as refreshing position calls it already
 
 	@property
-	def anchor_pos(self) -> Point2D:
+	def anchor(self) -> Point2D:
 		"""The anchor position of the button. Setting sets text AND button.
 
 		Can be set in px or dynamic (see `gui.Button` and `gui.Text`)
 		"""
-		return self.button.anchor_pos
+		return self.button.anchor
 
-	@anchor_pos.setter
-	def anchor_pos(self, val: Anchor) -> None:
+	@anchor.setter
+	def anchor(self, val: Anchor) -> None:
 		self.anchor_x, self.anchor_y = val
-		self._enlarge()
 
 	@property
 	def status(self) -> ButtonStatus:
@@ -316,14 +353,14 @@ class TextButton:
 	def hover_enlarge(self, size: int) -> None:
 		# If need to be resized and synced
 		if self._enlarged:
-			# * Trick: Can unhover and rehover button to make changes automatically.
-			# This way, no copy pasting code needed.
-			# Because status is being manually set instead of in Button._update_status,
-			# no dispatches are made.
-			self.status = 'Unpressed'
+			# Trick: Can unhover and rehover button to make changes automatically.
+			# 	This way, no copy pasting code needed.
+			# 	Because status is being manually set instead of in Button._update_status,
+			# 	no dispatches are made.
+			self.button.status = 'Unpressed'
 			self._enlarge()
 			self._hover_enlarge = size
-			self.status = 'Hover'
+			self.button.status = 'Hover'
 			self._enlarge()
 
 		else:
@@ -332,11 +369,19 @@ class TextButton:
 	@property
 	def enabled(self) -> bool:
 		return self.button.enabled
-	
+
 	@property
 	def dispatch(self) -> bool:
 		return self.button.dispatch
-	
+
 	@dispatch.setter
 	def dispatch(self, val: bool) -> None:
 		self.button.dispatch = val
+
+	@property
+	def width(self) -> int:
+		return self.button.width
+
+	@property
+	def height(self) -> int:
+		return self.button.height

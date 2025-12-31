@@ -4,8 +4,8 @@ import pyglet
 from pyglet.window import Window, key
 from pyglet.graphics import Batch, Group
 from pyglet.shapes import Circle
-from src.gui import TextButton
-from src.sprite import SpriteSheet
+from pyglet_gamemaker.gui import TextButton
+from pyglet_gamemaker.sprite import SpriteSheet
 
 window = Window(640, 480, caption=__name__)
 pyglet.gl.glClearColor(1, 1, 1, 1)
@@ -45,6 +45,8 @@ def on_key_press(symbol, modifiers):
 	elif symbol == key.DOWN:
 		button.anchor_y -= 10
 	elif symbol == key.R:
+		button.reset()
+	elif symbol == key.T:
 		button.hover_enlarge = random.randint(0, 25)
 		print(f'Button enlarge changed to {button.hover_enlarge}')
 	else:

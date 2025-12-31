@@ -1,13 +1,17 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
-from ..types import *
 from pyglet.text import Label
+
+from ..types import *
+from . import Widget
 
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
 
-class Text(Label):
+class Text(Label, Widget):
 	"""A 2D label with scrolling and custom anchor support.
 	Supports anchoring with specific pixel values or dynamic.
 
@@ -20,26 +24,11 @@ class Text(Label):
 	Use kwargs to attach event handlers.
 	"""
 
-	CONVERT_DYNAMIC: dict[AnchorX | AnchorY, float] = {
-		'left': 0,
-		'bottom': 0,
-		'center': 0.5,
-		'right': 1,
-		'top': 1,
-	}
-	"""Converts dynamic anchor to multiplier"""
-
 	_text: str = ''
 	_pos: Point2D = 0, 0
-	_anchor_pos: Point2D = 0, 0
 
-	start_pos: Point2D
-	"""Original (*unanchored* AND *unrotated*) position of text"""
 	font_info: FontInfo
 	"""(name, size)"""
-
-	raw_anchor: Anchor = 0, 0
-	"""Holds the raw anchor position (static + dynamic)"""
 
 	def __init__(
 		self,
@@ -75,7 +64,6 @@ class Text(Label):
 				Color of text.
 				Defaults to Color.WHITE.
 		"""
-
 		super().__init__(
 			text,
 			x,
@@ -88,40 +76,28 @@ class Text(Label):
 			group=group,
 		)
 
-		self.anchor_pos = anchor
+		self.start_anchor = self.anchor = anchor
 		self.start_pos = self.pos = x, y
 		self.font_info = font_info
 		self.text = text
 
-	def offset(self, val: Point2D) -> None:
-		"""Add from current offset of the text by an amount"""
-		self.x += val[0]
-		self.y += val[1]
-
-	def set_offset(self, val: Point2D) -> None:
-		"""Set offset of the text to an amount"""
-		self.pos = self.start_pos[0] + val[0], self.start_pos[1] + val[1]
-
 	def reset(self) -> None:
-		"""Reset text to initial state"""
-		self.pos = self.start_pos
+		super().reset()
 		self.font_name, self.font_size = self.font_info  # type: ignore[assignment]
 
-	def _calc_anchor_pos(self, val: Anchor) -> None:
-		"""Calculate a new anchor position and sync position"""
-		self.raw_anchor = val
-		self._anchor_pos = (
+	def _calc_anchor(self) -> None:
+		self._anchor = (
 			(
 				# Convert if AnchorX, else use raw int value
-				self.CONVERT_DYNAMIC[val[0]] * self.content_width
-				if isinstance(val[0], str)
-				else val[0]
+				self.CONVERT_DYNAMIC[self.raw_anchor[0]] * self.content_width
+				if isinstance(self.raw_anchor[0], str) else
+				self.raw_anchor[0]
 			),
 			(
 				# Convert if AnchorY, else use raw int value
-				self.CONVERT_DYNAMIC[val[1]] * self.content_height
-				if isinstance(val[1], str)
-				else val[1]
+				self.CONVERT_DYNAMIC[self.raw_anchor[1]] * self.content_height
+				if isinstance(self.raw_anchor[1], str) else
+				self.raw_anchor[1]
 			),
 		)
 		# Refresh position
@@ -139,12 +115,12 @@ class Text(Label):
 	@text.setter
 	def text(self, txt: str | int) -> None:
 		self.document.text = self._text = str(txt)
-		self._calc_anchor_pos(self.raw_anchor)
+		self._calc_anchor()
 
 	@property
 	def x(self) -> float:
 		"""The *unrotated* x position of the anchor point.
-		
+
 		To set both `.x` and `.y`, use `.pos`.
 		"""
 		return self._pos[0]
@@ -152,12 +128,12 @@ class Text(Label):
 	@x.setter
 	def x(self, val: float) -> None:
 		self._pos = val, self._pos[1]
-		self._set_x(val - self._anchor_pos[0])
+		self._set_x(val - self._anchor[0])
 
 	@property
 	def y(self) -> float:
 		"""The *unrotated* y position of the anchor point.
-		
+
 		To set both `.x` and `.y`, use `.pos`.
 		"""
 		return self._pos[1]
@@ -165,7 +141,7 @@ class Text(Label):
 	@y.setter
 	def y(self, val: float) -> None:
 		self._pos = self._pos[0], val
-		self._set_y(val - self._anchor_pos[1] - self._descent)  # Fixes y not centering
+		self._set_y(val - self._anchor[1] - self._descent)  # Fixes y not centering
 
 	@property
 	def pos(self) -> Point2D:
@@ -177,8 +153,8 @@ class Text(Label):
 		self._pos = val
 		self._set_position(
 			(
-				val[0] - self._anchor_pos[0],
-				val[1] - self._anchor_pos[1] - self._descent,  # Fixes y not centering
+				val[0] - self._anchor[0],
+				val[1] - self._anchor[1] - self._descent,  # Fixes y not centering
 				self._z,
 			)
 		)
@@ -191,11 +167,12 @@ class Text(Label):
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
-		return self._anchor_pos[0]
+		return self._anchor[0]
 
 	@anchor_x.setter
 	def anchor_x(self, val: AnchorX) -> None:
-		self._calc_anchor_pos((val, self._anchor_pos[1]))
+		self.raw_anchor = val, self.raw_anchor[1]
+		self._calc_anchor()
 
 	@property  # type: ignore[override]
 	def anchor_y(self) -> float:
@@ -205,20 +182,67 @@ class Text(Label):
 
 		To set both `.anchor_x` and `.anchor_y`, use `.anchor_pos`
 		"""
-		return self._anchor_pos[1]
+		return self._anchor[1]
 
 	@anchor_y.setter
 	def anchor_y(self, val: AnchorY) -> None:
-		self._calc_anchor_pos((self._anchor_pos[0], val))
+		self.raw_anchor = self.raw_anchor[0], val
+		self._calc_anchor()
 
 	@property
-	def anchor_pos(self) -> Point2D:
+	def anchor(self) -> Point2D:
 		"""The anchor of the text, in px.
 
 		Can be set in px or dynamic.
 		"""
-		return self._anchor_pos
+		return self._anchor
 
-	@anchor_pos.setter
-	def anchor_pos(self, val: Anchor) -> None:
-		self._calc_anchor_pos(val)
+	@anchor.setter
+	def anchor(self, val: Anchor) -> None:
+		self.raw_anchor = val
+		self._calc_anchor()
+
+	@property  # type: ignore[override]
+	def width(self) -> int:
+		"""Width of text. Equivalent to `~pyglet.text.Label.content_width`.
+
+		To get `~pyglet.text.Label.width`, use `.label_width()`.
+		"""
+		return Label.content_width.fget(self)  # type: ignore[attr-defined]
+
+	@width.setter
+	def width(self, val: int) -> None:
+		return Label.content_width.fset(self, val)  # type: ignore[attr-defined]
+
+	@property  # type: ignore[override]
+	def height(self) -> int:
+		"""Height of text. Equivalent to `~pyglet.text.Label.content_height`.
+
+		To get `~pyglet.text.Label.height`, use `.label_height()`.
+		"""
+		return Label.content_height.fget(self)  # type: ignore[attr-defined]
+
+	@height.setter
+	def height(self, val: int) -> None:
+		return Label.content_height.fset(self, val)  # type: ignore[attr-defined]
+
+	@property
+	def label_width(self) -> int | None:
+		"""The defined maximum width of the layout in pixels, or None.
+
+		If `multiline` and `wrap_lines` is True, the `width` defines where the
+		text will be wrapped. If `multiline` is False or `wrap_lines` is False,
+		this property has no effect.
+		"""
+		return Label.width.fget(self)  # type: ignore[attr-defined]
+
+	@property
+	def label_height(self) -> int | None:
+		"""The defined maximum height of the layout in pixels, or None.
+
+		When `height` is not None, it affects the positioning of the
+		text when :py:attr:`~pyglet.text.layout.TextLayout.anchor_y` and
+		:py:attr:`~pyglet.text.layout.TextLayout.content_valign` are
+		used.
+		"""
+		return Label.width.fget(self)  # type: ignore[attr-defined]
