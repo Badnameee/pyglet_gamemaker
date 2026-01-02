@@ -18,6 +18,7 @@ from .shapes.rect import Rect
 from .types import Color
 
 if TYPE_CHECKING:
+	from .gui.widget import Widget
 	from .sprite import SpriteSheet
 	from .types import Anchor, EventHandler, FontInfo
 	from .window import Window
@@ -84,7 +85,7 @@ class Scene(ABC, EventDispatcher):
 	"""Rendering subgroup for the buttons"""
 	text_group: Group
 	"""Rendering subgroup for the text"""
-	widgets: dict[str, Text | Button | TextButton]
+	widgets: dict[str, Widget]
 	"""Stores all widgets in the menu"""
 
 	def __init__(self, name: str, **kwargs: EventHandler) -> None:
