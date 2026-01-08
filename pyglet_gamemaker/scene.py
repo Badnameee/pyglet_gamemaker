@@ -19,7 +19,7 @@ from .types import Color
 
 if TYPE_CHECKING:
 	from .gui.widget import Widget
-	from .sprite import SpriteSheet
+	from .sprite.sprite_sheet import SpriteSheet
 	from .types import Anchor, EventHandler, FontInfo
 	from .window import Window
 

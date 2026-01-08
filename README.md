@@ -69,7 +69,7 @@ Creating a spritesheet
 >>> # Create a sprite sheet with image assets
 >>> #   This image, found in /test, has 3 images (bottom to top):
 >>> #   Unpressed, Hover, and Pressed
->>> self.sheet = pgm.sprite.SpriteSheet('test/Default Button.png', rows=3, cols=1)
+>>> self.sheet = pgm.sprite.SpriteSheet('test/Test Button SpriteSheet.png', rows=3, cols=1)
 ```
 
 The following should go in `Menu.create_widgets()`:

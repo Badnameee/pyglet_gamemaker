@@ -1,17 +1,13 @@
 from __future__ import annotations
 
 from pyglet_gamemaker.scene import Scene
-from pyglet_gamemaker.sprite import SpriteSheet
+from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
 from pyglet_gamemaker.types import Color
 from pyglet_gamemaker.window import Window
 
 
 class TestScene(Scene):
-	WIDGET_POS = {
-		'Test1': (0.2, 0.1),
-		'Test2': (0.5, 0.5),
-		'Test3': (0.7, 0.7)
-	}
+	WIDGET_POS = {'Test1': (0.2, 0.1), 'Test2': (0.5, 0.5), 'Test3': (0.7, 0.7)}
 
 	default_font_info = None, 40
 
@@ -20,7 +16,7 @@ class TestScene(Scene):
 		self.bg_color = bg_color
 
 	def initialize(self):
-		self.sheet = SpriteSheet('Default Button.png', 3, 1)
+		self.sheet = SpriteSheet('Test Button SpriteSheet.png', 3, 1)
 
 		self.bg = self.create_bg(self.bg_color)
 		self.create_text(
@@ -87,7 +83,7 @@ class TestScene2(Scene):
 		self.bg_color = bg_color
 
 	def initialize(self):
-		self.sheet = SpriteSheet('Default Button.png', 3, 1)
+		self.sheet = SpriteSheet('Test Button SpriteSheet.png', 3, 1)
 
 		self.bg = self.create_bg(self.bg_color)
 		self.create_text(

@@ -15,7 +15,7 @@ from .widget import Widget
 if TYPE_CHECKING:
 	from pyglet.graphics import Batch, Group
 
-	from ..sprite import SpriteSheet
+	from ..sprite.sprite_sheet import SpriteSheet
 	from ..types import (
 		Anchor,
 		AnchorX,
