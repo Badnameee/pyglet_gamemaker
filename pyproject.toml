@@ -70,7 +70,7 @@ indent-style = "tab"
 quote-style = "single"
 
 [tool.ruff.lint.per-file-ignores]
-"test/*" = ["D", "T20"]
+"test/*" = ["D", "T20", "F403", "F405"]
 "run_tests.py" = ["D", "T20"]
 
 [tool.ruff.lint.isort]
