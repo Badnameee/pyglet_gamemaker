@@ -2,5 +2,7 @@ mypy==1.18.2
 mypy_extensions==1.1.0
 pathspec==0.12.1
 pyglet==2.1.10
+PyYAML==6.0.3
 ruff==0.14.10
+types-PyYAML==6.0.12.20250915
 typing_extensions==4.15.0
