@@ -1,0 +1,24 @@
+rows: 4
+cols: 4
+row-padding: 0
+col-padding: 0
+top-down: True
+
+delimiter: _
+void: _
+
+anim-data:
+  C:
+    name: Circle
+    fps: 10
+    loop: True
+  R:
+    name: Rectangle
+    fps: 8
+    loop: True
+
+data:
+  - [C_1, C_2, C_3, C_4]
+  - [C_5, C_6, C_7, C_8]
+  - [C_9, C_10, R_1, R_2]
+  - [R_3, R_4, _, _]

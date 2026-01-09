@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from pyglet_gamemaker.scene import Scene
 from pyglet_gamemaker.sprite.sprite_sheet import SpriteSheet
 from pyglet_gamemaker.types import Color

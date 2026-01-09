@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-import pyglet
 import os
+
+import pyglet
+
 
 def clear_terminal() -> None:
 	if os.name == 'nt':
@@ -12,7 +14,7 @@ def clear_terminal() -> None:
 
 # Holds all imports for tests
 tests = [
-	'sprite_spritesheet',
+	'sprite',
 	'gui_button',
 	'gui_text',
 	'gui_text_button',
@@ -23,7 +25,7 @@ tests = [
 	'window',
 ]
 
-pyglet.resource.path = ['test']
+pyglet.resource.path.append('media')
 pyglet.resource.reindex()
 
 clear_terminal()
