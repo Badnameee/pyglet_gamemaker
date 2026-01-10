@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import os
 
-import pyglet
-
 
 def clear_terminal() -> None:
 	if os.name == 'nt':
@@ -24,9 +22,6 @@ tests = [
 	'scene',
 	'window',
 ]
-
-pyglet.resource.path.append('media')
-pyglet.resource.reindex()
 
 clear_terminal()
 for test_num, test in enumerate(tests, 1):

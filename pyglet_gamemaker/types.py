@@ -9,6 +9,9 @@
 - Anchor: (AnchorX, AnchorY)
 - Color: Enum that stores a bunch of preset colors. See `~pgm.types.Color`
 - Eventhandler: Type for user-made event handlers
+- YAMLDict: Type for parsed YAML files
+- YAMLIterable: Type for iterable YAML values for custom parsing
+- YAMLValidationType: Types of validation currently supposed by custom YAML parser
 """
 
 from __future__ import annotations
@@ -27,6 +30,9 @@ AnchorX = _AnchorX | float
 AnchorY = _AnchorY | float
 Anchor = tuple[AnchorX, AnchorY]
 EventHandler = Callable[..., Any]
+YAMLDict = dict[Any, Any] | None
+YAMLIterable = dict | list  # type: ignore[type-arg]
+YAMLValidationType = Literal['Anim']
 
 
 class Color(Enum):

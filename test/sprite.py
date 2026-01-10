@@ -32,6 +32,7 @@ print(f'Lookup after naming: {sheet.lookup}')
 print(f'Single item: {sheet.item_dim}')
 print(f'Cols: {sheet.cols}, Rows: {sheet.rows}')
 print(f'Total Dim: {sheet.img.width}, {sheet.img.height}')
+print()
 
 ######################
 # Testing Animations #
