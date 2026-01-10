@@ -1,3 +1,10 @@
+# ruff: noqa: D105, D107
+
+"""Stores all errors used internally.
+
+At the moment they all are related to validating .yaml files.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,6 +18,7 @@ class MissingConfigKey(KeyError):
 	"""Missing configuration key in .yaml file."""
 
 	hierarchy: Any | tuple[Any, ...]
+	"""Key hierarchy pointing to error"""
 
 	def __init__(self, hierarchy: Any | tuple[Any, ...]) -> None:
 		self.hierarchy = hierarchy
@@ -27,8 +35,11 @@ class InvalidConfigKeyType(TypeError):
 	"""Invalid key type in .yaml file."""
 
 	hierarchy: Any | tuple[Any, ...]
+	"""Key hierarchy pointing to error"""
 	expected: type | tuple[type, ...]
+	"""Expected type or types of key"""
 	actual: type
+	"""Actual type of key"""
 
 	def __init__(
 		self,
@@ -36,7 +47,9 @@ class InvalidConfigKeyType(TypeError):
 		expected: type | tuple[type, ...],
 		actual: type,
 	) -> None:
-		self.hierarchy, self.expected, self.actual = hierarchy, expected, actual
+		self.hierarchy = hierarchy
+		self.expected = expected
+		self.actual = actual
 
 	def __str__(self) -> str:
 		if isinstance(self.hierarchy, tuple):
@@ -58,8 +71,11 @@ class InvalidConfigValueType(TypeError):
 	"""Invalid value type in .yaml file."""
 
 	hierarchy: Any | tuple[Any, ...]
+	"""Key hierarchy pointing to error"""
 	expected: type | tuple[type, ...]
+	"""Expected type or types of value"""
 	actual: type
+	"""Actual type of key"""
 
 	def __init__(
 		self,
@@ -67,7 +83,9 @@ class InvalidConfigValueType(TypeError):
 		expected: type | tuple[type, ...],
 		actual: type,
 	) -> None:
-		self.hierarchy, self.expected, self.actual = hierarchy, expected, actual
+		self.hierarchy = hierarchy
+		self.expected = expected
+		self.actual = actual
 
 	def __str__(self) -> str:
 		if isinstance(self.hierarchy, tuple):
@@ -89,17 +107,18 @@ class InvalidConfigValue(TypeError):
 	"""Invalid value in .yaml file."""
 
 	hierarchy: Any | tuple[Any, ...]
-	expected: str
+	"""Key hierarchy pointing to error"""
+	expected_format: str
+	"""Expected format of the value"""
 	actual: Any
+	"""Actual value"""
 
 	def __init__(
 		self, hierarchy: Any | tuple[Any, ...], expected_format: str, actual: Any
 	) -> None:
-		self.hierarchy, self.expected_format, self.actual = (
-			hierarchy,
-			expected_format,
-			actual,
-		)
+		self.hierarchy = hierarchy
+		self.expected_format = expected_format
+		self.actual = actual
 
 	def __str__(self) -> str:
 		if isinstance(self.hierarchy, tuple):
@@ -112,12 +131,21 @@ class InvalidConfigValue(TypeError):
 
 
 class InvalidConfigFile(RuntimeError):
-	file_path: PurePath
-	errors: list[Exception]
+	"""Invalid .yaml file."""
 
-	def __init__(self, file_path: PurePath, errors: list[Exception]) -> None:
-		self.errors = errors
+	file_path: PurePath
+	"""Path to .yaml file"""
+	validation_mode: str
+	"""The mode of validation /yaml file failed"""
+	errors: list[Exception]
+	"""All errors generated while parsing .yaml file"""
+
+	def __init__(
+		self, file_path: PurePath, validation_mode: str, errors: list[Exception]
+	) -> None:
 		self.file_path = file_path
+		self.validation_mode = validation_mode
+		self.errors = errors
 
 	def __str__(self) -> str:
 		s = f'{len(self.errors)} config errors determined inside "{self.file_path}":\n'
@@ -131,6 +159,7 @@ class EmptyConfigFile(ValueError):
 	"""Empty .yaml file."""
 
 	file_path: PurePath
+	"""Path to .yaml file"""
 
 	def __init__(self, file_path: PurePath) -> None:
 		self.file_path = file_path

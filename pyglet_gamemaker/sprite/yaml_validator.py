@@ -1,14 +1,13 @@
+"""Module containing a YAML validator for validating .yaml files."""
+
 from __future__ import annotations
 
-from pathlib import PurePath
 from typing import TYPE_CHECKING
 
 import yaml
 
 from ..errors import (
 	EmptyConfigFile,
-	InvalidConfigFile,
-	InvalidConfigKeyType,
 	InvalidConfigValue,
 	InvalidConfigValueType,
 	MissingConfigKey,
@@ -18,29 +17,54 @@ if TYPE_CHECKING:
 	from pathlib import Path
 	from typing import Callable
 
-	from ..types import YAMLDict, YAMLValidationType
+	from ..types import YAMLDict, YAMLValidationMode
 
 
 class YAMLValidator:
-	file_path: Path
-	yaml: YAMLDict
-	validation_func: Callable[..., list[Exception]]
+	"""A class to validate .yaml files for a specific format within the scope of the library.
 
-	def __init__(self, file_path: Path, validation_type: YAMLValidationType) -> None:
-		self.file_path = file_path
+	Raises:
+		NotImplementedError: If a validation mode is passed that does not exist
+		EmptyConfigFile: Empty config file when you run `.validate()`
+		Accumulate other Exceptions (found in `~pgm.errors`) that propagate as a return value
+	"""
+
+	file_path: Path
+	"""Path to .yaml file. Unchangable."""
+	yaml: YAMLDict
+	"""Yaml info"""
+	validation_mode: YAMLValidationMode
+	"""The validation mode selected. Unchangable."""
+	validation_func: Callable[..., list[Exception]]
+	"""The validation function associated with mode."""
+
+	def __init__(self, file_path: Path, validation_mode: YAMLValidationMode) -> None:
+		"""Create a YAMLValidator.
+
+		Args:
+			file_path (Path): Path to the .yaml file
+			validation_mode (YAMLValidationMode): The mode of validation. See `~pgm.types.YAMLValidationMode` for all supposed modes.
+		"""
+		self.file_path, self.validation_mode = file_path, validation_mode
 
 		with open(self.file_path) as file:
 			self.yaml = yaml.safe_load(file)
 
-		if validation_type == 'Anim':
+		if validation_mode == 'Anim':
 			self.validation_func = self._validate_anim
 			return
 
 		raise NotImplementedError(
-			f'{validation_type} not in currently supported validation types'
+			f'{validation_mode} not in currently supported validation types'
 		)
 
 	def validate(self) -> list[Exception]:
+		"""Run validation function.
+
+		Returns:
+			list[Exception]:
+				All exceptions raised during validation
+		"""
 		return self.validation_func()
 
 	def _validate_anim(self) -> list[Exception]:
@@ -52,7 +76,7 @@ class YAMLValidator:
 
 		errors: list[Exception] = []
 
-		# Conditions of yaml file that affect future validation
+		# Conditions of .yaml file that affect future validation
 		conditions = {
 			'rows': False,
 			'cols': False,
@@ -86,11 +110,15 @@ class YAMLValidator:
 			errors.append(MissingConfigKey('row-padding'))
 		elif not isinstance(self.yaml['row-padding'], int):
 			errors.append(
-				InvalidConfigValueType('row-padding', int, type(self.yaml['row-padding']))
+				InvalidConfigValueType(
+					'row-padding', int, type(self.yaml['row-padding'])
+				)
 			)
 		elif self.yaml['row-padding'] < 0:
 			errors.append(
-				InvalidConfigValue('row-padding', '{value} >= 0', self.yaml['row-padding'])
+				InvalidConfigValue(
+					'row-padding', '{value} >= 0', self.yaml['row-padding']
+				)
 			)
 
 		# col-padding: {int >= 0}
@@ -98,11 +126,15 @@ class YAMLValidator:
 			errors.append(MissingConfigKey('col-padding'))
 		elif not isinstance(self.yaml['col-padding'], int):
 			errors.append(
-				InvalidConfigValueType('col-padding', int, type(self.yaml['col-padding']))
+				InvalidConfigValueType(
+					'col-padding', int, type(self.yaml['col-padding'])
+				)
 			)
 		elif self.yaml['col-padding'] < 0:
 			errors.append(
-				InvalidConfigValue('col-padding', '{value} >= 0', self.yaml['col-padding'])
+				InvalidConfigValue(
+					'col-padding', '{value} >= 0', self.yaml['col-padding']
+				)
 			)
 
 		# top-down: {bool}
@@ -167,7 +199,9 @@ class YAMLValidator:
 
 					if 'fps' not in self.yaml['anim-data'][alias]:
 						errors.append(MissingConfigKey(('anim-data', alias, 'fps')))
-					elif not isinstance(self.yaml['anim-data'][alias]['fps'], float | int):
+					elif not isinstance(
+						self.yaml['anim-data'][alias]['fps'], float | int
+					):
 						errors.append(
 							InvalidConfigValueType(
 								('anim-data', alias, 'fps'),
@@ -263,13 +297,5 @@ class YAMLValidator:
 										id,
 									)
 								)
-
-		(
-			MissingConfigKey,
-			InvalidConfigValueType,
-			InvalidConfigFile,
-			InvalidConfigValue,
-			InvalidConfigKeyType,
-		)
 
 		return errors

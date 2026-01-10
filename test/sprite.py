@@ -65,8 +65,6 @@ for anim in anim3.animations.values():
 	sprite_3s[-1].scale = 10
 	x += sprite_3s[-1].width
 
-line = pyglet.shapes.Line(0, 100, window.width, 100, color=(255, 0, 0, 255))
-
 # Alias images
 glBindTexture(GL_TEXTURE_2D, 1)
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
@@ -80,7 +78,6 @@ glBindTexture(GL_TEXTURE_2D, 0)
 @window.event
 def on_draw():
 	window.clear()
-	line.draw()
 	batch.draw()
 
 

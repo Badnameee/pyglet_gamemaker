@@ -186,7 +186,7 @@ class AnimationList:
 	- `data:` - A 2d list containing the data for each row
 		- `- [C_1, C_2, ...]` - Each row contains a list in the format {alias}{delimiter}{frame-num} or {void}
 
-	An example yaml file (can be found in `test/media/` folder in github repository)
+	An example .yaml file (can be found in `test/media/` folder in github repository)
 	```
 	rows: 4
 	cols: 4
@@ -246,7 +246,7 @@ class AnimationList:
 			atlas,
 		)
 
-		# Parse yaml frames
+		# Parse .yaml frames
 		self.all_frames = {}
 		for row in self.sprite_sheet.yaml['data']:
 			for name in row:
@@ -266,7 +266,7 @@ class AnimationList:
 					)
 				)
 
-		# Sort possible unsorted yaml frames
+		# Sort possible unsorted .yaml frames
 		for frames in self.all_frames.values():
 			frames.sort()
 

@@ -30,7 +30,7 @@ class SpriteSheet:
 
 	path: Path
 	"""Path of original image"""
-	yaml_path: Path
+	yaml_path: Path | None = None
 	"""Path of .yaml config file"""
 	rows: int
 	"""Number of rows in sheet"""
@@ -90,6 +90,8 @@ class SpriteSheet:
 				Ex. Cannot set texture parameters without setting for entire atlas.
 				If False, create separate texture. Slower but allows for more customization.
 				Defaults to True.
+			yaml (bool, optional):
+				If True, add yaml file path to `.yaml_file`. Used by `._name_with_yaml()`.
 		"""
 		self.path, self.rows, self.cols = Path(file_path), rows, cols
 		self.row_padding, self.col_padding = row_padding, col_padding
@@ -106,7 +108,7 @@ class SpriteSheet:
 	def from_yaml(
 		cls, file_path: str, top_down: bool = True, atlas: bool = True
 	) -> Self:
-		"""Load a spritesheet using the associated yaml file.
+		"""Load a spritesheet using the associated .yaml file.
 
 		Args:
 			file_path (str):
@@ -122,10 +124,10 @@ class SpriteSheet:
 		"""
 		yaml_path = Path(file_path).absolute().with_suffix('.yaml')
 
-
-		errors = YAMLValidator(yaml_path, 'Anim').validate()
+		validator = YAMLValidator(yaml_path, 'Anim')
+		errors = validator.validate()
 		if errors:
-			raise InvalidConfigFile(PurePath(yaml_path), errors)
+			raise InvalidConfigFile(PurePath(yaml_path), validator.validation_mode, errors)
 
 		yaml = cls._raw_yaml(yaml_path)
 		self = cls(
@@ -170,11 +172,11 @@ class SpriteSheet:
 			# Parse data for names
 			self.lookup.clear()
 			for row_num, row in enumerate(self.yaml['data']):
-				for col_num, name in enumerate(row):
+				for col_num, id in enumerate(row):
 					# Void, not a sprite
-					if name == self.yaml['void']:
+					if id == self.yaml['void']:
 						continue
-					self.lookup[name] = row_num * self.cols + col_num
+					self.lookup[id] = row_num * self.cols + col_num
 
 	def __getitem__(
 		self,
